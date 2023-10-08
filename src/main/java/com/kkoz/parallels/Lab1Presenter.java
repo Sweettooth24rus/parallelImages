@@ -1,8 +1,5 @@
 package com.kkoz.parallels;
 
-import com.vaadin.flow.component.upload.SucceededEvent;
-import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -16,31 +13,30 @@ import java.util.List;
 public class Lab1Presenter {
     private final Lab1View view;
 
-    private List<List<Integer>> redMatrix;
-    private List<List<Integer>> greenMatrix;
-    private List<List<Integer>> blueMatrix;
-
     public Lab1Presenter(Lab1View view) {
         this.view = view;
     }
 
-    public void onPhotoUploaded(SucceededEvent event, MultiFileMemoryBuffer buffer) {
+    public void splitImageToChannels(InputStream imageStream, SplitType type) {
         try {
-            var inputStream = buffer.getInputStream(event.getFileName());
-            view.refreshSourcePhotoSection(inputStream);
-            var bufferedImage = ImageIO.read(buffer.getInputStream(event.getFileName()));
+            var bufferedImage = ImageIO.read(imageStream);
+
             var width = bufferedImage.getWidth();
             var height = bufferedImage.getHeight();
-            redMatrix = new ArrayList<>(width);
-            greenMatrix = new ArrayList<>(width);
-            blueMatrix = new ArrayList<>(width);
+
+            var redMatrix = new ArrayList<List<Integer>>(width);
+            var greenMatrix = new ArrayList<List<Integer>>(width);
+            var blueMatrix = new ArrayList<List<Integer>>(width);
+
             for (var x = 0; x < width; x++) {
                 var redHeight = new ArrayList<Integer>(height);
                 var greenHeight = new ArrayList<Integer>(height);
                 var blueHeight = new ArrayList<Integer>(height);
+
                 for (var y = 0; y < height; y++) {
                     var rgb = bufferedImage.getRGB(x, y);
-                    var color = new java.awt.Color(rgb);
+                    var color = new Color(rgb);
+
                     redHeight.add(color.getRed());
                     greenHeight.add(color.getGreen());
                     blueHeight.add(color.getBlue());
@@ -50,36 +46,53 @@ public class Lab1Presenter {
                 blueMatrix.add(x, blueHeight);
             }
 
-            var bufferedImageRed = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            var bufferedImageGreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            var bufferedImageBlue = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var bufferedImageFirst = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var bufferedImageSecond = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var bufferedImageThird = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
             for (var x = 0; x < width; x++) {
                 var redHeight = redMatrix.get(x);
                 var greenHeight = greenMatrix.get(x);
                 var blueHeight = blueMatrix.get(x);
+
                 for (var y = 0; y < height; y++) {
-                    var red = redHeight.get(y);
-                    var green = greenHeight.get(y);
-                    var blue = blueHeight.get(y);
-                    bufferedImageRed.setRGB(x, y, new Color(red, 0, 0).getRGB());
-                    bufferedImageGreen.setRGB(x, y, new Color(0, green, 0).getRGB());
-                    bufferedImageBlue.setRGB(x, y, new Color(0, 0, blue).getRGB());
+                    var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
+                    var arrayRGB = splitImage(sourceRGB, type);
+
+                    bufferedImageFirst.setRGB(x, y, arrayRGB[0].getRGB());
+                    bufferedImageSecond.setRGB(x, y, arrayRGB[1].getRGB());
+                    bufferedImageThird.setRGB(x, y, arrayRGB[2].getRGB());
                 }
             }
 
             view.refreshChannelsPhotoSection(
-                getInputStreamFromBufferedImage(bufferedImageRed),
-                getInputStreamFromBufferedImage(bufferedImageGreen),
-                getInputStreamFromBufferedImage(bufferedImageBlue)
+                getInputStreamFromBufferedImage(bufferedImageFirst),
+                getInputStreamFromBufferedImage(bufferedImageSecond),
+                getInputStreamFromBufferedImage(bufferedImageThird)
             );
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
+    private RGB[] splitImage(RGB sourceRGB, SplitType type) {
+        var result = new RGB[3];
+        switch (type) {
+            case RGB -> {
+                result[0] = RGB.fullRed(sourceRGB);
+                result[1] = RGB.fullGreen(sourceRGB);
+                result[2] = RGB.fullBlue(sourceRGB);
+            }
+            case HSV -> {
+                result[0] = RGB.fullBlue(sourceRGB);
+                result[1] = RGB.fullGreen(sourceRGB);
+                result[2] = RGB.fullRed(sourceRGB);
+            }
+        }
+        return result;
+    }
+
+    private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
         var byteBuffer = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "jpeg", byteBuffer);
         return new ByteArrayInputStream(byteBuffer.toByteArray());

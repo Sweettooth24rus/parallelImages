@@ -1,6 +1,7 @@
 package com.kkoz.parallels;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -8,6 +9,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 
@@ -15,6 +17,9 @@ import java.io.InputStream;
 public class Lab1View extends VerticalLayout {
     private final Lab1Presenter presenter;
 
+    private String photoFileName;
+    private MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
+    private ComboBox<SplitType> splitTypeComboBox;
     private HorizontalLayout sourceImageSection = new HorizontalLayout();
     private HorizontalLayout channelsImageSection = new HorizontalLayout();
 
@@ -23,17 +28,38 @@ public class Lab1View extends VerticalLayout {
 
         add(
             createUploadPhotoSection(),
+            createSplitTypeComboBox(),
             sourceImageSection,
             channelsImageSection
         );
     }
 
+    private ComboBox<SplitType> createSplitTypeComboBox() {
+        splitTypeComboBox = new ComboBox<>();
+        splitTypeComboBox.setItems(SplitType.values());
+        splitTypeComboBox.setValue(SplitType.RGB);
+        splitTypeComboBox.addValueChangeListener(event -> {
+            if (StringUtils.isNotBlank(photoFileName)) {
+                presenter.splitImageToChannels(
+                    buffer.getInputStream(photoFileName),
+                    event.getValue()
+                );
+            }
+        });
+        return splitTypeComboBox;
+    }
+
     private Component createUploadPhotoSection() {
-        var buffer = new MultiFileMemoryBuffer();
         var upload = new Upload(buffer);
 
         upload.addSucceededListener(event -> {
-            presenter.onPhotoUploaded(event, buffer);
+            photoFileName = event.getFileName();
+            var inputStream = buffer.getInputStream(photoFileName);
+            refreshSourcePhotoSection(inputStream);
+            presenter.splitImageToChannels(
+                buffer.getInputStream(photoFileName),
+                splitTypeComboBox.getValue()
+            );
             upload.clearFileList();
         });
 
