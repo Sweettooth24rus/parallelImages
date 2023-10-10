@@ -1,9 +1,11 @@
 package com.kkoz.parallels;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.awt.*;
 
+@Getter
 @AllArgsConstructor
 public class RGB {
     private Integer red;
@@ -20,6 +22,10 @@ public class RGB {
 
     public static RGB fullBlue(RGB rgb) {
         return new RGB(0, 0, rgb.blue);
+    }
+
+    public static RGB grayScale(Integer value) {
+        return new RGB(value, value, value);
     }
 
     public int getRGB() {

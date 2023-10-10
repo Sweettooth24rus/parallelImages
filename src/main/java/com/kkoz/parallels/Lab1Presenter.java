@@ -84,9 +84,64 @@ public class Lab1Presenter {
                 result[2] = RGB.fullBlue(sourceRGB);
             }
             case HSV -> {
-                result[0] = RGB.fullBlue(sourceRGB);
-                result[1] = RGB.fullGreen(sourceRGB);
-                result[2] = RGB.fullRed(sourceRGB);
+                var red = sourceRGB.getRed();
+                var green = sourceRGB.getGreen();
+                var blue = sourceRGB.getBlue();
+
+                var cmax = Math.max(Math.max(red, green), blue);
+                var cmin = Math.min(Math.min(red, green), blue);
+
+                double saturation;
+                double hue;
+
+                if (cmax == 0) {
+                    saturation = 0;
+                } else {
+                    saturation = (double) (cmax - cmin) / cmax;
+                }
+
+                if (saturation == 0)
+                    hue = 0;
+                else {
+                    if (red == cmax) {
+                        hue = (double) (green - blue) / (cmax - cmin);
+                    } else if (green == cmax) {
+                        hue = 2 + (double) (blue - red) / (cmax - cmin);
+                    } else {
+                        hue = 4 + (double) (red - green) / (cmax - cmin);
+                    }
+                    hue /= 6;
+                    if (hue < 0)
+                        hue++;
+                }
+
+                var h = (hue - Math.floor(hue)) * 6.0;
+                var f = h - Math.floor(h);
+                var q = (1 - f);
+                switch ((int) h) {
+                    case 0:
+                        result[0] = new RGB(255, (int) (f * 255 + 0.5), 0);
+                        break;
+                    case 1:
+                        result[0] = new RGB((int) (q * 255 + 0.5), 255, 0);
+                        break;
+                    case 2:
+                        result[0] = new RGB(0, 255, (int) (f * 255 + 0.5));
+                        break;
+                    case 3:
+                        result[0] = new RGB(0, (int) (q * 255 + 0.5), 255);
+                        break;
+                    case 4:
+                        result[0] = new RGB((int) (f * 255 + 0.5), 0, 255);
+                        break;
+                    case 5:
+                        result[0] = new RGB(255, 0, (int) (q * 255 + 0.5));
+                        break;
+                }
+
+                result[1] = RGB.grayScale((int) (saturation * 255));
+
+                result[2] = RGB.grayScale(cmax);
             }
         }
         return result;
