@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SplitType {
     RGB("RGB"),
-    HSV("HSV");
+    HSV("HSV"),
+    YUV("YUV");
 
     private final String name;
 }

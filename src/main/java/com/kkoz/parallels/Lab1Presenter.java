@@ -116,32 +116,52 @@ public class Lab1Presenter {
                 }
 
                 var h = (hue - Math.floor(hue)) * 6.0;
-                var f = h - Math.floor(h);
-                var q = (1 - f);
+                var f = (int) ((h - Math.floor(h)) * 255 + 0.5);
+                var q = (255 - f);
                 switch ((int) h) {
                     case 0:
-                        result[0] = new RGB(255, (int) (f * 255 + 0.5), 0);
+                        result[0] = new RGB(255, f, 0);
                         break;
                     case 1:
-                        result[0] = new RGB((int) (q * 255 + 0.5), 255, 0);
+                        result[0] = new RGB(q, 255, 0);
                         break;
                     case 2:
-                        result[0] = new RGB(0, 255, (int) (f * 255 + 0.5));
+                        result[0] = new RGB(0, 255, f);
                         break;
                     case 3:
-                        result[0] = new RGB(0, (int) (q * 255 + 0.5), 255);
+                        result[0] = new RGB(0, q, 255);
                         break;
                     case 4:
-                        result[0] = new RGB((int) (f * 255 + 0.5), 0, 255);
+                        result[0] = new RGB(f, 0, 255);
                         break;
                     case 5:
-                        result[0] = new RGB(255, 0, (int) (q * 255 + 0.5));
+                        result[0] = new RGB(255, 0, q);
                         break;
                 }
 
                 result[1] = RGB.grayScale((int) (saturation * 255));
 
                 result[2] = RGB.grayScale(cmax);
+            }
+            case YUV -> {
+                var red = sourceRGB.getRed();
+                var green = sourceRGB.getGreen();
+                var blue = sourceRGB.getBlue();
+
+                var y = 0.299 * red + 0.587 * green + 0.114 * blue;
+                result[0] = RGB.grayScale((int) y);
+
+                var u = -0.147 * red - 0.289 * green + 0.436 * blue;
+                var ur = 127;
+                var ug = (int) (127 - 0.395 * u);
+                var ub = (int) (127 + 2.032 * u);
+                result[1] = new RGB(ur, ug, ub);
+
+                var v = 0.615 * red - 0.515 * green - 0.1 * blue;
+                var vr = (int) (127 + 1.14 * v);
+                var vg = (int) (127 - 0.581 * v);
+                var vb = 127;
+                result[2] = new RGB(vr, vg, vb);
             }
         }
         return result;
