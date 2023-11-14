@@ -1,4 +1,9 @@
-package com.kkoz.parallels;
+package com.kkoz.parallels.lab_1;
+
+import com.kkoz.parallels.ChannelData;
+import com.kkoz.parallels.PixelData;
+import com.kkoz.parallels.RGB;
+import com.kkoz.parallels.SplitType;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -27,6 +32,28 @@ public class Lab1Presenter {
             var redMatrix = new ArrayList<List<Integer>>(width);
             var greenMatrix = new ArrayList<List<Integer>>(width);
             var blueMatrix = new ArrayList<List<Integer>>(width);
+
+            int[] channel1 = new int[0];
+            int[] channel2 = new int[0];
+            int[] channel3 = new int[0];
+
+            switch (type) {
+                case RGB -> {
+                    channel1 = new int[256];
+                    channel2 = new int[256];
+                    channel3 = new int[256];
+                }
+                case HSV -> {
+                    channel1 = new int[360];
+                    channel2 = new int[256];
+                    channel3 = new int[256];
+                }
+                case YUV -> {
+                    channel1 = new int[256];
+                    channel2 = new int[225];
+                    channel3 = new int[315];
+                }
+            }
 
             for (var x = 0; x < width; x++) {
                 var redHeight = new ArrayList<Integer>(height);
@@ -57,31 +84,51 @@ public class Lab1Presenter {
 
                 for (var y = 0; y < height; y++) {
                     var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
-                    var arrayRGB = splitImage(sourceRGB, type);
+                    var pixelData = splitImage(sourceRGB, type);
+                    var rgbArray = pixelData.getRgb();
+                    var channelArray = pixelData.getChannel();
 
-                    bufferedImageFirst.setRGB(x, y, arrayRGB[0].getRGB());
-                    bufferedImageSecond.setRGB(x, y, arrayRGB[1].getRGB());
-                    bufferedImageThird.setRGB(x, y, arrayRGB[2].getRGB());
+                    bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());
+                    bufferedImageSecond.setRGB(x, y, rgbArray[1].getRGB());
+                    bufferedImageThird.setRGB(x, y, rgbArray[2].getRGB());
+
+                    channel1[channelArray[0]]++;
+                    channel2[channelArray[1]]++;
+                    channel3[channelArray[2]]++;
                 }
             }
 
-            view.refreshChannelsPhotoSection(
-                getInputStreamFromBufferedImage(bufferedImageFirst),
-                getInputStreamFromBufferedImage(bufferedImageSecond),
-                getInputStreamFromBufferedImage(bufferedImageThird)
+            view.refreshChannelsSection(
+                new ChannelData(
+                    getInputStreamFromBufferedImage(bufferedImageFirst),
+                    channel1
+                ),
+                new ChannelData(
+                    getInputStreamFromBufferedImage(bufferedImageSecond),
+                    channel2
+                ),
+                new ChannelData(
+                    getInputStreamFromBufferedImage(bufferedImageThird),
+                    channel3
+                )
             );
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    private RGB[] splitImage(RGB sourceRGB, SplitType type) {
-        var result = new RGB[3];
+    private PixelData splitImage(RGB sourceRGB, SplitType type) {
+        var rgbArray = new RGB[3];
+        var channelArray = new Integer[3];
         switch (type) {
             case RGB -> {
-                result[0] = RGB.fullRed(sourceRGB);
-                result[1] = RGB.fullGreen(sourceRGB);
-                result[2] = RGB.fullBlue(sourceRGB);
+                rgbArray[0] = RGB.fullRed(sourceRGB);
+                rgbArray[1] = RGB.fullGreen(sourceRGB);
+                rgbArray[2] = RGB.fullBlue(sourceRGB);
+
+                channelArray[0] = sourceRGB.getRed();
+                channelArray[1] = sourceRGB.getGreen();
+                channelArray[2] = sourceRGB.getBlue();
             }
             case HSV -> {
                 var red = sourceRGB.getRed();
@@ -120,28 +167,32 @@ public class Lab1Presenter {
                 var q = (255 - f);
                 switch ((int) h) {
                     case 0:
-                        result[0] = new RGB(255, f, 0);
+                        rgbArray[0] = new RGB(255, f, 0);
                         break;
                     case 1:
-                        result[0] = new RGB(q, 255, 0);
+                        rgbArray[0] = new RGB(q, 255, 0);
                         break;
                     case 2:
-                        result[0] = new RGB(0, 255, f);
+                        rgbArray[0] = new RGB(0, 255, f);
                         break;
                     case 3:
-                        result[0] = new RGB(0, q, 255);
+                        rgbArray[0] = new RGB(0, q, 255);
                         break;
                     case 4:
-                        result[0] = new RGB(f, 0, 255);
+                        rgbArray[0] = new RGB(f, 0, 255);
                         break;
                     case 5:
-                        result[0] = new RGB(255, 0, q);
+                        rgbArray[0] = new RGB(255, 0, q);
                         break;
                 }
 
-                result[1] = RGB.grayScale((int) (saturation * 255));
+                rgbArray[1] = RGB.grayScale((int) (saturation * 255));
 
-                result[2] = RGB.grayScale(cmax);
+                rgbArray[2] = RGB.grayScale(cmax);
+
+                channelArray[0] = (int) (hue * 360);
+                channelArray[1] = (int) (saturation * 255);
+                channelArray[2] = cmax;
             }
             case YUV -> {
                 var red = sourceRGB.getRed();
@@ -149,22 +200,27 @@ public class Lab1Presenter {
                 var blue = sourceRGB.getBlue();
 
                 var y = 0.299 * red + 0.587 * green + 0.114 * blue;
-                result[0] = RGB.grayScale((int) y);
+                rgbArray[0] = RGB.grayScale((int) y);
 
                 var u = -0.147 * red - 0.289 * green + 0.436 * blue;
                 var ur = 127;
                 var ug = (int) (127 - 0.395 * u);
                 var ub = (int) (127 + 2.032 * u);
-                result[1] = new RGB(ur, ug, ub);
+                rgbArray[1] = new RGB(ur, ug, ub);
 
                 var v = 0.615 * red - 0.515 * green - 0.1 * blue;
                 var vr = (int) (127 + 1.14 * v);
                 var vg = (int) (127 - 0.581 * v);
                 var vb = 127;
-                result[2] = new RGB(vr, vg, vb);
+                rgbArray[2] = new RGB(vr, vg, vb);
+
+                channelArray[0] = (int) y;
+                channelArray[1] = (int) u + 112;
+                channelArray[2] = (int) v + 157;
             }
         }
-        return result;
+
+        return new PixelData(rgbArray, channelArray);
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {

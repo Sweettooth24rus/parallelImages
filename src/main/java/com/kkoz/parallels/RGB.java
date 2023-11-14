@@ -1,16 +1,20 @@
 package com.kkoz.parallels;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 import java.awt.*;
 
-@Getter
-@AllArgsConstructor
+@Data
 public class RGB {
     private Integer red;
     private Integer green;
     private Integer blue;
+
+    public RGB(Integer red, Integer green, Integer blue) {
+        this.red = checkBorderValues(red);
+        this.green = checkBorderValues(green);
+        this.blue = checkBorderValues(blue);
+    }
 
     public static RGB fullRed(RGB rgb) {
         return new RGB(rgb.red, 0, 0);
@@ -30,5 +34,15 @@ public class RGB {
 
     public int getRGB() {
         return new Color(red, green, blue).getRGB();
+    }
+
+    private Integer checkBorderValues(Integer value) {
+        if (value > 255) {
+            return 255;
+        }
+        if (value < 0) {
+            return 0;
+        }
+        return value;
     }
 }
