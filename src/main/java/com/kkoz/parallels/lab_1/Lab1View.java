@@ -4,10 +4,12 @@ import com.kkoz.parallels.ChannelData;
 import com.kkoz.parallels.SplitType;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
@@ -22,7 +24,9 @@ public class Lab1View extends VerticalLayout {
     private final Lab1Presenter presenter;
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout sourceImageSection = new HorizontalLayout();
-    private final HorizontalLayout channelsSection = new HorizontalLayout();
+    private final HorizontalLayout sourceChannelsSection = new HorizontalLayout();
+    private final HorizontalLayout filterImageSection = new HorizontalLayout();
+    private final HorizontalLayout filterChannelsSection = new HorizontalLayout();
 
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
@@ -34,23 +38,11 @@ public class Lab1View extends VerticalLayout {
             createUploadPhotoSection(),
             createSplitTypeComboBox(),
             sourceImageSection,
-            channelsSection
+            sourceChannelsSection,
+            createFilterSection(),
+            filterImageSection,
+            filterChannelsSection
         );
-    }
-
-    private ComboBox<SplitType> createSplitTypeComboBox() {
-        splitTypeComboBox = new ComboBox<>();
-        splitTypeComboBox.setItems(SplitType.values());
-        splitTypeComboBox.setValue(SplitType.RGB);
-        splitTypeComboBox.addValueChangeListener(event -> {
-            if (StringUtils.isNotBlank(photoFileName)) {
-                presenter.splitImageToChannels(
-                    buffer.getInputStream(photoFileName),
-                    event.getValue()
-                );
-            }
-        });
-        return splitTypeComboBox;
     }
 
     private Component createUploadPhotoSection() {
@@ -70,6 +62,40 @@ public class Lab1View extends VerticalLayout {
         return upload;
     }
 
+    private ComboBox<SplitType> createSplitTypeComboBox() {
+        splitTypeComboBox = new ComboBox<>();
+        splitTypeComboBox.setItems(SplitType.values());
+        splitTypeComboBox.setValue(SplitType.RGB);
+        splitTypeComboBox.addValueChangeListener(event -> {
+            if (StringUtils.isNotBlank(photoFileName)) {
+                presenter.splitImageToChannels(
+                    buffer.getInputStream(photoFileName),
+                    event.getValue()
+                );
+            }
+        });
+        return splitTypeComboBox;
+    }
+
+    private Component createFilterSection() {
+        var container = new HorizontalLayout();
+        container.getStyle().set("align-items", "end");
+
+        var lightnessField = new TextField("Яркость", "Введите величину изменения яркости");
+        container.add(lightnessField);
+
+        var submitButton = new Button(
+            "Применить",
+            e -> presenter.applyYUVFilters(
+                buffer.getInputStream(photoFileName),
+                lightnessField.getValue()
+            )
+        );
+        container.add(submitButton);
+
+        return container;
+    }
+
     public void refreshSourcePhotoSection(InputStream sourceImageStream) {
         sourceImageSection.removeAll();
         addPhotoToSection(sourceImageSection, sourceImageStream, "Исходное фото");
@@ -78,10 +104,10 @@ public class Lab1View extends VerticalLayout {
     public void refreshChannelsSection(ChannelData firstChannel,
                                        ChannelData secondChannel,
                                        ChannelData thirdChannel) {
-        channelsSection.removeAll();
-        addToSection(channelsSection, firstChannel, "Первый канал");
-        addToSection(channelsSection, secondChannel, "Второй канал");
-        addToSection(channelsSection, thirdChannel, "Третий канал");
+        sourceChannelsSection.removeAll();
+        addToSection(sourceChannelsSection, firstChannel, "Первый канал");
+        addToSection(sourceChannelsSection, secondChannel, "Второй канал");
+        addToSection(sourceChannelsSection, thirdChannel, "Третий канал");
     }
 
     private void addToSection(HorizontalLayout section, ChannelData data, String name) {
@@ -123,5 +149,20 @@ public class Lab1View extends VerticalLayout {
             histogram.add(line);
         }
         section.add(histogram);
+    }
+
+    public void refreshFilterPhotosSection(InputStream imageStream) {
+        filterImageSection.removeAll();
+        addPhotoToSection(filterImageSection, buffer.getInputStream(photoFileName), "До фильтра");
+        addPhotoToSection(filterImageSection, imageStream, "После фильтра");
+    }
+
+    public void refreshFilterChannelsSection(ChannelData firstChannel,
+                                             ChannelData secondChannel,
+                                             ChannelData thirdChannel) {
+        filterChannelsSection.removeAll();
+        addToSection(filterChannelsSection, firstChannel, "Первый канал");
+        addToSection(filterChannelsSection, secondChannel, "Второй канал");
+        addToSection(filterChannelsSection, thirdChannel, "Третий канал");
     }
 }

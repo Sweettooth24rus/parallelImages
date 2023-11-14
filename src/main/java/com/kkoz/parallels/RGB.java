@@ -16,6 +16,10 @@ public class RGB {
         this.blue = checkBorderValues(blue);
     }
 
+    public RGB(Double red, Double green, Double blue) {
+        this(red.intValue(), green.intValue(), blue.intValue());
+    }
+
     public static RGB fullRed(RGB rgb) {
         return new RGB(rgb.red, 0, 0);
     }
@@ -36,7 +40,7 @@ public class RGB {
         return new Color(red, green, blue).getRGB();
     }
 
-    private Integer checkBorderValues(Integer value) {
+    public static Integer checkBorderValues(Integer value) {
         if (value > 255) {
             return 255;
         }
