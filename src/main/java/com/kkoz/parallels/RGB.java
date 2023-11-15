@@ -48,6 +48,15 @@ public class RGB {
         return new RGB(value, value, value);
     }
 
+    public static RGB invertRGB(RGB rgb) {
+        return new RGB(
+            255 - rgb.red,
+            255 - rgb.green,
+            255 - rgb.blue
+        );
+
+    }
+
     public int getRGB() {
         return new Color(red, green, blue).getRGB();
     }

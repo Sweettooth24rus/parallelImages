@@ -18,7 +18,7 @@ public enum SplitType {
                 return 255;
             case HSV:
                 if (channel == 1) {
-                    return 360;
+                    return 359;
                 }
                 return 255;
             case YUV:
@@ -39,12 +39,36 @@ public enum SplitType {
     }
 
     public Integer invert(Integer channel, Integer value, Integer minValue, Integer maxValue) {
+        return invert(channel, value.doubleValue(), minValue, maxValue).intValue();
+    }
+
+    public Double invert(Integer channel, Double value, Integer minValue, Integer maxValue) {
+        if (minValue == null) {
+            return value;
+        }
+        if (minValue <= value && maxValue >= value) {
+            return getMaxValue(channel) - value;
+        }
+        return value;
+    }
+
+    public Double invertHue(Double value, Integer minValue, Integer maxValue) {
         if (minValue == null) {
             return value;
         }
         if (minValue < value && maxValue > value) {
-            return getMaxValue(channel) - value;
+            return (value + 180) % 360;
         }
         return value;
+    }
+
+    public Boolean isInverted(Integer value, Integer minValue, Integer maxValue) {
+        if (minValue == null) {
+            return false;
+        }
+        if (minValue < value && maxValue > value) {
+            return true;
+        }
+        return false;
     }
 }

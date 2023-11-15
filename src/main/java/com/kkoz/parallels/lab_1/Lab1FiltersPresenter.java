@@ -119,7 +119,7 @@ public class Lab1FiltersPresenter {
                     var pixelData = splitImage(sourceRGB, lightness, contrast);
                     var rgbArray = pixelData.getRgb();
                     var channelArray = pixelData.getChannel();
-                    var filteredRGB = pixelData.getFilterRRB();
+                    var filteredRGB = pixelData.getNewRGB();
 
                     bufferedImage.setRGB(x, y, filteredRGB.getRGB());
                     bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());

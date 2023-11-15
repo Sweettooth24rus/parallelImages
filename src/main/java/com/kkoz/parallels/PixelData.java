@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class PixelData {
     private RGB[] rgb;
-    private RGB filterRRB;
+    private RGB newRGB;
     private Integer[] channel;
 
     public PixelData(RGB[] rgb, Integer[] channel) {

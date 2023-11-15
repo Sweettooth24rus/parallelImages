@@ -137,7 +137,9 @@ public class Lab1InversionPresenter {
                     );
                     var rgbArray = pixelData.getRgb();
                     var channelArray = pixelData.getChannel();
+                    var newRGB = pixelData.getNewRGB();
 
+                    bufferedImage.setRGB(x, y, newRGB.getRGB());
                     bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());
                     bufferedImageSecond.setRGB(x, y, rgbArray[1].getRGB());
                     bufferedImageThird.setRGB(x, y, rgbArray[2].getRGB());
@@ -145,14 +147,6 @@ public class Lab1InversionPresenter {
                     channel1[channelArray[0]]++;
                     channel2[channelArray[1]]++;
                     channel3[channelArray[2]]++;
-
-                    var newColor = new Color(
-                        rgbArray[0].getRed(),
-                        rgbArray[1].getGreen(),
-                        rgbArray[2].getBlue()
-                    );
-
-                    bufferedImage.setRGB(x, y, newColor.getRGB());
                 }
             }
 
@@ -186,21 +180,24 @@ public class Lab1InversionPresenter {
                                  Integer channel3MaxValue) {
         var rgbArray = new RGB[3];
         var channelArray = new Integer[3];
+
+        var r = 0D;
+        var g = 0D;
+        var b = 0D;
+
         switch (type) {
             case RGB -> {
-                rgbArray[0] = RGB.fullRed(
-                    type.invert(1, sourceRGB.getRed(), channel1MinValue, channel1MaxValue)
-                );
-                rgbArray[1] = RGB.fullGreen(
-                    type.invert(2, sourceRGB.getGreen(), channel2MinValue, channel2MaxValue)
-                );
-                rgbArray[2] = RGB.fullBlue(
-                    type.invert(3, sourceRGB.getBlue(), channel3MinValue, channel3MaxValue)
-                );
+                r = type.invert(1, sourceRGB.getRed(), channel1MinValue, channel1MaxValue);
+                g = type.invert(2, sourceRGB.getGreen(), channel2MinValue, channel2MaxValue);
+                b = type.invert(3, sourceRGB.getBlue(), channel3MinValue, channel3MaxValue);
 
-                channelArray[0] = rgbArray[0].getRed();
-                channelArray[1] = rgbArray[1].getGreen();
-                channelArray[2] = rgbArray[2].getBlue();
+                rgbArray[0] = RGB.fullRed((int) r);
+                rgbArray[1] = RGB.fullGreen((int) g);
+                rgbArray[2] = RGB.fullBlue((int) b);
+
+                channelArray[0] = (int) r;
+                channelArray[1] = (int) g;
+                channelArray[2] = (int) b;
             }
             case HSV -> {
                 var red = sourceRGB.getRed();
@@ -216,7 +213,7 @@ public class Lab1InversionPresenter {
                 if (cmax == 0) {
                     saturation = 0;
                 } else {
-                    saturation = (double) (cmax - cmin) / cmax;
+                    saturation = type.invert(2, (double) (cmax - cmin) / cmax * 255, channel2MinValue, channel2MaxValue);
                 }
 
                 if (saturation == 0)
@@ -233,6 +230,9 @@ public class Lab1InversionPresenter {
                     if (hue < 0)
                         hue++;
                 }
+
+                cmax = type.invert(3, cmax, channel3MinValue, channel3MaxValue);
+                hue = type.invertHue(hue * 360, channel1MinValue, channel1MaxValue) / 360;
 
                 var h = (hue - Math.floor(hue)) * 6.0;
                 var f = (int) ((h - Math.floor(h)) * 255 + 0.5);
@@ -258,41 +258,81 @@ public class Lab1InversionPresenter {
                         break;
                 }
 
-                rgbArray[1] = RGB.grayScale((int) (saturation * 255));
+                rgbArray[1] = RGB.grayScale((int) saturation);
 
                 rgbArray[2] = RGB.grayScale(cmax);
 
                 channelArray[0] = (int) (hue * 360);
-                channelArray[1] = (int) (saturation * 255);
+                channelArray[1] = (int) saturation;
                 channelArray[2] = cmax;
+
+                var p = cmax * (255 - saturation) / 255;
+                q = (int) (cmax * (255 - saturation * f / 255) / 255);
+                var t = cmax * (255 - (saturation * (255 - f) / 255)) / 255;
+                switch ((int) h) {
+                    case 0:
+                        r = cmax;
+                        g = t;
+                        b = p;
+                        break;
+                    case 1:
+                        r = q;
+                        g = cmax;
+                        b = p;
+                        break;
+                    case 2:
+                        r = p;
+                        g = cmax;
+                        b = t;
+                        break;
+                    case 3:
+                        r = p;
+                        g = q;
+                        b = cmax;
+                        break;
+                    case 4:
+                        r = t;
+                        g = p;
+                        b = cmax;
+                        break;
+                    case 5:
+                        r = cmax;
+                        g = p;
+                        b = q;
+                        break;
+                }
             }
             case YUV -> {
                 var red = sourceRGB.getRed();
                 var green = sourceRGB.getGreen();
                 var blue = sourceRGB.getBlue();
 
-                var y = 0.299 * red + 0.587 * green + 0.114 * blue;
-                rgbArray[0] = RGB.grayScale((int) y);
+                var y = type.invert(1, 0.299 * red + 0.587 * green + 0.114 * blue, channel1MinValue, channel1MaxValue);
+                rgbArray[0] = RGB.grayScale(y.intValue());
 
-                var u = -0.147 * red - 0.289 * green + 0.436 * blue;
+                var u = type.invert(2, (-0.147 * red - 0.289 * green + 0.436 * blue) + 112, channel2MinValue, channel2MaxValue) - 112;
                 var ur = 127;
                 var ug = (int) (127 - 0.395 * u);
                 var ub = (int) (127 + 2.032 * u);
                 rgbArray[1] = new RGB(ur, ug, ub);
 
-                var v = 0.615 * red - 0.515 * green - 0.1 * blue;
+                var v = type.invert(3, (0.615 * red - 0.515 * green - 0.1 * blue) + 157, channel3MinValue, channel3MaxValue) - 157;
                 var vr = (int) (127 + 1.14 * v);
                 var vg = (int) (127 - 0.581 * v);
                 var vb = 127;
                 rgbArray[2] = new RGB(vr, vg, vb);
 
-                channelArray[0] = (int) y;
-                channelArray[1] = (int) u + 112;
+                channelArray[0] = y.intValue();
+                channelArray[1] = (int) (u + 112);
                 channelArray[2] = (int) v + 157;
+
+                r = y + 1.14 * v;
+                g = y - 0.395 * u - 0.581 * v;
+                b = y + 2.032 * u;
             }
         }
 
-        return new PixelData(rgbArray, channelArray);
+        return new PixelData(rgbArray, new RGB(r, g, b), channelArray);
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
