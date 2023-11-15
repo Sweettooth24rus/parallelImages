@@ -56,19 +56,9 @@ public enum SplitType {
         if (minValue == null) {
             return value;
         }
-        if (minValue < value && maxValue > value) {
+        if (minValue <= value && maxValue >= value) {
             return (value + 180) % 360;
         }
         return value;
-    }
-
-    public Boolean isInverted(Integer value, Integer minValue, Integer maxValue) {
-        if (minValue == null) {
-            return false;
-        }
-        if (minValue < value && maxValue > value) {
-            return true;
-        }
-        return false;
     }
 }
