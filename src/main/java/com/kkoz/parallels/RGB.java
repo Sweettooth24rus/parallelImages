@@ -21,15 +21,27 @@ public class RGB {
     }
 
     public static RGB fullRed(RGB rgb) {
-        return new RGB(rgb.red, 0, 0);
+        return fullRed(rgb.red);
+    }
+
+    public static RGB fullRed(Integer red) {
+        return new RGB(red, 0, 0);
     }
 
     public static RGB fullGreen(RGB rgb) {
-        return new RGB(0, rgb.green, 0);
+        return fullGreen(rgb.green);
+    }
+
+    public static RGB fullGreen(Integer green) {
+        return new RGB(0, green, 0);
     }
 
     public static RGB fullBlue(RGB rgb) {
-        return new RGB(0, 0, rgb.blue);
+        return fullBlue(rgb.blue);
+    }
+
+    public static RGB fullBlue(Integer blue) {
+        return new RGB(0, 0, blue);
     }
 
     public static RGB grayScale(Integer value) {

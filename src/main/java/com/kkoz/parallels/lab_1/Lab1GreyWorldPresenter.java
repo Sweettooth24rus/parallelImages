@@ -55,13 +55,13 @@ public class Lab1GreyWorldPresenter {
                     var rgb = bufferedImage.getRGB(x, y);
                     var color = new Color(rgb);
 
-                    var greyColor = new Color(
+                    var greyWorldColor = new Color(
                         RGB.checkBorderValues(color.getRed() * avg / redValue),
                         RGB.checkBorderValues(color.getGreen() * avg / greenValue),
                         RGB.checkBorderValues(color.getBlue() * avg / blueValue)
                     );
 
-                    bufferedImage.setRGB(x, y, greyColor.getRGB());
+                    bufferedImage.setRGB(x, y, greyWorldColor.getRGB());
                 }
             }
 
