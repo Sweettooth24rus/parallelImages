@@ -1,11 +1,9 @@
 package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
-import com.kkoz.parallels.SplitType;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -14,31 +12,26 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.util.Arrays;
 
-@Route("/labs/1")
-public class Lab1View extends VerticalLayout {
-    private final Lab1Presenter presenter;
+@Route("/labs/1/filters")
+public class Lab1FiltersView extends VerticalLayout {
+    private final Lab1FiltersPresenter presenter;
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
-    private final HorizontalLayout sourceImageSection = new HorizontalLayout();
-    private final HorizontalLayout sourceChannelsSection = new HorizontalLayout();
     private final HorizontalLayout filterImageSection = new HorizontalLayout();
     private final HorizontalLayout filterChannelsSection = new HorizontalLayout();
 
     private String photoFileName;
-    private ComboBox<SplitType> splitTypeComboBox;
+    private TextField lightnessField;
+    private TextField contrastField;
 
-    Lab1View() {
-        presenter = new Lab1Presenter(this);
+    Lab1FiltersView() {
+        presenter = new Lab1FiltersPresenter(this);
 
         add(
             createUploadPhotoSection(),
-            createSplitTypeComboBox(),
-            sourceImageSection,
-            sourceChannelsSection,
             createFilterSection(),
             filterImageSection,
             filterChannelsSection
@@ -50,11 +43,10 @@ public class Lab1View extends VerticalLayout {
 
         upload.addSucceededListener(event -> {
             photoFileName = event.getFileName();
-            var inputStream = buffer.getInputStream(photoFileName);
-            refreshSourcePhotoSection(inputStream);
-            presenter.splitImageToChannels(
+            presenter.applyYUVFilters(
                 buffer.getInputStream(photoFileName),
-                splitTypeComboBox.getValue()
+                lightnessField.getValue(),
+                contrastField.getValue()
             );
             upload.clearFileList();
         });
@@ -62,30 +54,15 @@ public class Lab1View extends VerticalLayout {
         return upload;
     }
 
-    private ComboBox<SplitType> createSplitTypeComboBox() {
-        splitTypeComboBox = new ComboBox<>();
-        splitTypeComboBox.setItems(SplitType.values());
-        splitTypeComboBox.setValue(SplitType.RGB);
-        splitTypeComboBox.addValueChangeListener(event -> {
-            if (StringUtils.isNotBlank(photoFileName)) {
-                presenter.splitImageToChannels(
-                    buffer.getInputStream(photoFileName),
-                    event.getValue()
-                );
-            }
-        });
-        return splitTypeComboBox;
-    }
-
     private Component createFilterSection() {
         var container = new HorizontalLayout();
         container.getStyle().set("align-items", "end");
 
-        var lightnessField = new TextField("Яркость", "Введите величину изменения яркости");
+        lightnessField = new TextField("Яркость", "Введите величину изменения яркости");
         lightnessField.setValue("0");
         container.add(lightnessField);
 
-        var contrastField = new TextField("Контрастность", "Введите коэффициент контрастности");
+        contrastField = new TextField("Контрастность", "Введите коэффициент контрастности");
         contrastField.setValue("1");
         container.add(contrastField);
 
@@ -100,20 +77,6 @@ public class Lab1View extends VerticalLayout {
         container.add(submitButton);
 
         return container;
-    }
-
-    public void refreshSourcePhotoSection(InputStream sourceImageStream) {
-        sourceImageSection.removeAll();
-        addPhotoToSection(sourceImageSection, sourceImageStream, "Исходное фото");
-    }
-
-    public void refreshChannelsSection(ChannelData firstChannel,
-                                       ChannelData secondChannel,
-                                       ChannelData thirdChannel) {
-        sourceChannelsSection.removeAll();
-        addToSection(sourceChannelsSection, firstChannel, "Первый канал");
-        addToSection(sourceChannelsSection, secondChannel, "Второй канал");
-        addToSection(sourceChannelsSection, thirdChannel, "Третий канал");
     }
 
     private void addToSection(HorizontalLayout section, ChannelData data, String name) {

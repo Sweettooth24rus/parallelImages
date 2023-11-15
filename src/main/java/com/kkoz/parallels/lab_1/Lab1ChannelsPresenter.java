@@ -15,10 +15,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lab1Presenter {
-    private final Lab1View view;
+public class Lab1ChannelsPresenter {
+    private final Lab1ChannelsView view;
 
-    public Lab1Presenter(Lab1View view) {
+    public Lab1ChannelsPresenter(Lab1ChannelsView view) {
         this.view = view;
     }
 
@@ -269,92 +269,5 @@ public class Lab1Presenter {
         var byteBuffer = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "jpeg", byteBuffer);
         return new ByteArrayInputStream(byteBuffer.toByteArray());
-    }
-
-    public void applyYUVFilters(InputStream imageStream, String lightnessText, String contrastText) {
-
-        try {
-            var lightness = Integer.parseInt(lightnessText);
-            var contrast = Double.parseDouble(contrastText);
-
-            var bufferedImage = ImageIO.read(imageStream);
-
-            var width = bufferedImage.getWidth();
-            var height = bufferedImage.getHeight();
-
-            var redMatrix = new ArrayList<List<Integer>>(width);
-            var greenMatrix = new ArrayList<List<Integer>>(width);
-            var blueMatrix = new ArrayList<List<Integer>>(width);
-
-            var channel1 = new int[256];
-            var channel2 = new int[225];
-            var channel3 = new int[315];
-
-            for (var x = 0; x < width; x++) {
-                var redHeight = new ArrayList<Integer>(height);
-                var greenHeight = new ArrayList<Integer>(height);
-                var blueHeight = new ArrayList<Integer>(height);
-
-                for (var y = 0; y < height; y++) {
-                    var rgb = bufferedImage.getRGB(x, y);
-                    var color = new Color(rgb);
-
-                    redHeight.add(color.getRed());
-                    greenHeight.add(color.getGreen());
-                    blueHeight.add(color.getBlue());
-                }
-                redMatrix.add(x, redHeight);
-                greenMatrix.add(x, greenHeight);
-                blueMatrix.add(x, blueHeight);
-            }
-
-            var bufferedImageFirst = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            var bufferedImageSecond = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            var bufferedImageThird = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-            for (var x = 0; x < width; x++) {
-                var redHeight = redMatrix.get(x);
-                var greenHeight = greenMatrix.get(x);
-                var blueHeight = blueMatrix.get(x);
-
-                for (var y = 0; y < height; y++) {
-                    var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
-                    var pixelData = splitImage(sourceRGB, lightness, contrast);
-                    var rgbArray = pixelData.getRgb();
-                    var channelArray = pixelData.getChannel();
-                    var filteredRGB = pixelData.getFilterRRB();
-
-                    bufferedImage.setRGB(x, y, filteredRGB.getRGB());
-                    bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());
-                    bufferedImageSecond.setRGB(x, y, rgbArray[1].getRGB());
-                    bufferedImageThird.setRGB(x, y, rgbArray[2].getRGB());
-
-                    channel1[channelArray[0]]++;
-                    channel2[channelArray[1]]++;
-                    channel3[channelArray[2]]++;
-                }
-            }
-
-            view.refreshFilterPhotosSection(
-                getInputStreamFromBufferedImage(bufferedImage)
-            );
-
-            view.refreshFilterChannelsSection(
-                new ChannelData(
-                    getInputStreamFromBufferedImage(bufferedImageFirst),
-                    channel1
-                ),
-                new ChannelData(
-                    getInputStreamFromBufferedImage(bufferedImageSecond),
-                    channel2
-                ),
-                new ChannelData(
-                    getInputStreamFromBufferedImage(bufferedImageThird),
-                    channel3
-                )
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
