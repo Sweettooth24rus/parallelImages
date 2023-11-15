@@ -223,48 +223,6 @@ public class Lab1ChannelsPresenter {
         return new PixelData(rgbArray, channelArray);
     }
 
-    private PixelData splitImage(RGB sourceRGB, Integer lightness, Double contrast) {
-        var rgbArray = new RGB[3];
-        var channelArray = new Integer[3];
-
-        var red = sourceRGB.getRed();
-        var green = sourceRGB.getGreen();
-        var blue = sourceRGB.getBlue();
-
-        var y = 0.299 * red + 0.587 * green + 0.114 * blue;
-
-        if (lightness != null) {
-            y += lightness;
-        }
-        if (contrast != null) {
-            y = (contrast * (y - 127)) + 127;
-        }
-
-        rgbArray[0] = RGB.grayScale((int) y);
-
-        var u = -0.147 * red - 0.289 * green + 0.436 * blue;
-        var ur = 127;
-        var ug = (int) (127 - 0.395 * u);
-        var ub = (int) (127 + 2.032 * u);
-        rgbArray[1] = new RGB(ur, ug, ub);
-
-        var v = 0.615 * red - 0.515 * green - 0.1 * blue;
-        var vr = (int) (127 + 1.14 * v);
-        var vg = (int) (127 - 0.581 * v);
-        var vb = 127;
-        rgbArray[2] = new RGB(vr, vg, vb);
-
-        channelArray[0] = RGB.checkBorderValues((int) y);
-        channelArray[1] = (int) u + 112;
-        channelArray[2] = (int) v + 157;
-
-        var r = y + 1.14 * v;
-        var g = y - 0.395 * u - 0.581 * v;
-        var b = y + 2.032 * u;
-
-        return new PixelData(rgbArray, new RGB(r, g, b), channelArray);
-    }
-
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
         var byteBuffer = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "jpeg", byteBuffer);

@@ -49,4 +49,8 @@ public class RGB {
         }
         return value;
     }
+
+    public static Integer checkBorderValues(Double value) {
+        return checkBorderValues(value.intValue());
+    }
 }
