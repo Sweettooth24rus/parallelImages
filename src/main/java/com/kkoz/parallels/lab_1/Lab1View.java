@@ -82,13 +82,19 @@ public class Lab1View extends VerticalLayout {
         container.getStyle().set("align-items", "end");
 
         var lightnessField = new TextField("Яркость", "Введите величину изменения яркости");
+        lightnessField.setValue("0");
         container.add(lightnessField);
+
+        var contrastField = new TextField("Контрастность", "Введите коэффициент контрастности");
+        contrastField.setValue("1");
+        container.add(contrastField);
 
         var submitButton = new Button(
             "Применить",
             e -> presenter.applyYUVFilters(
                 buffer.getInputStream(photoFileName),
-                lightnessField.getValue()
+                lightnessField.getValue(),
+                contrastField.getValue()
             )
         );
         container.add(submitButton);

@@ -223,7 +223,7 @@ public class Lab1Presenter {
         return new PixelData(rgbArray, channelArray);
     }
 
-    private PixelData splitImage(RGB sourceRGB, Integer lightness) {
+    private PixelData splitImage(RGB sourceRGB, Integer lightness, Double contrast) {
         var rgbArray = new RGB[3];
         var channelArray = new Integer[3];
 
@@ -233,7 +233,12 @@ public class Lab1Presenter {
 
         var y = 0.299 * red + 0.587 * green + 0.114 * blue;
 
-        y += lightness;
+        if (lightness != null) {
+            y += lightness;
+        }
+        if (contrast != null) {
+            y = (contrast * (y - 127)) + 127;
+        }
 
         rgbArray[0] = RGB.grayScale((int) y);
 
@@ -266,10 +271,12 @@ public class Lab1Presenter {
         return new ByteArrayInputStream(byteBuffer.toByteArray());
     }
 
-    public void applyYUVFilters(InputStream imageStream, String lightnessText) {
-        var lightness = Integer.parseInt(lightnessText);
+    public void applyYUVFilters(InputStream imageStream, String lightnessText, String contrastText) {
 
         try {
+            var lightness = Integer.parseInt(lightnessText);
+            var contrast = Double.parseDouble(contrastText);
+
             var bufferedImage = ImageIO.read(imageStream);
 
             var width = bufferedImage.getWidth();
@@ -312,7 +319,7 @@ public class Lab1Presenter {
 
                 for (var y = 0; y < height; y++) {
                     var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
-                    var pixelData = splitImage(sourceRGB, lightness);
+                    var pixelData = splitImage(sourceRGB, lightness, contrast);
                     var rgbArray = pixelData.getRgb();
                     var channelArray = pixelData.getChannel();
                     var filteredRGB = pixelData.getFilterRRB();
@@ -346,8 +353,8 @@ public class Lab1Presenter {
                     channel3
                 )
             );
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
