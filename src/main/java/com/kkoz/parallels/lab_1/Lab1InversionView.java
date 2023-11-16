@@ -43,8 +43,11 @@ public class Lab1InversionView extends VerticalLayout {
         presenter = new Lab1InversionPresenter(this);
 
         channel1FullCheckbox.setLabel("Инвертировать полностью");
+        channel1FullCheckbox.setValue(true);
         channel2FullCheckbox.setLabel("Инвертировать полностью");
+        channel2FullCheckbox.setValue(true);
         channel3FullCheckbox.setLabel("Инвертировать полностью");
+        channel3FullCheckbox.setValue(true);
 
         channel1MinField.setLabel("Минимальное значение");
         channel1MaxField.setLabel("Максимальное значение");

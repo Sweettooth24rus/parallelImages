@@ -93,14 +93,18 @@ public class Lab1InversionPresenter {
             var greenMatrix = new ArrayList<List<Integer>>(width);
             var blueMatrix = new ArrayList<List<Integer>>(width);
 
+            List<Integer> redHeight;
+            List<Integer> greenHeight;
+            List<Integer> blueHeight;
+
             int[] channel1 = new int[type.getMaxValueCapacity(1)];
             int[] channel2 = new int[type.getMaxValueCapacity(2)];
             int[] channel3 = new int[type.getMaxValueCapacity(3)];
 
             for (var x = 0; x < width; x++) {
-                var redHeight = new ArrayList<Integer>(height);
-                var greenHeight = new ArrayList<Integer>(height);
-                var blueHeight = new ArrayList<Integer>(height);
+                redHeight = new ArrayList<>(height);
+                greenHeight = new ArrayList<>(height);
+                blueHeight = new ArrayList<>(height);
 
                 for (var y = 0; y < height; y++) {
                     var color = new Color(bufferedImage.getRGB(x, y));
@@ -119,9 +123,9 @@ public class Lab1InversionPresenter {
             var bufferedImageThird = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
             for (var x = 0; x < width; x++) {
-                var redHeight = redMatrix.get(x);
-                var greenHeight = greenMatrix.get(x);
-                var blueHeight = blueMatrix.get(x);
+                redHeight = redMatrix.get(x);
+                greenHeight = greenMatrix.get(x);
+                blueHeight = blueMatrix.get(x);
 
                 for (var y = 0; y < height; y++) {
                     var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
