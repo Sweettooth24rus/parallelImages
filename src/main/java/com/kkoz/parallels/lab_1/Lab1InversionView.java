@@ -8,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -26,6 +27,8 @@ public class Lab1InversionView extends VerticalLayout {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout channelsSection = new HorizontalLayout();
+    private final HorizontalLayout resultSection = new HorizontalLayout();
+    private final TextField threadsCountField = new TextField();
 
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
@@ -56,9 +59,13 @@ public class Lab1InversionView extends VerticalLayout {
         channel3MinField.setLabel("Минимальное значение");
         channel3MaxField.setLabel("Максимальное значение");
 
+        threadsCountField.setLabel("Количество потоков");
+        threadsCountField.setValue("1");
+
         add(
             createUploadPhotoSection(),
             createSplitTypeComboBox(),
+            createResultSection(null),
             imageSection,
             channelsSection
         );
@@ -80,7 +87,8 @@ public class Lab1InversionView extends VerticalLayout {
                 channel2MaxField.getValue(),
                 channel3FullCheckbox.getValue(),
                 channel3MinField.getValue(),
-                channel3MaxField.getValue()
+                channel3MaxField.getValue(),
+                threadsCountField.getValue()
             );
             upload.clearFileList();
         });
@@ -105,7 +113,8 @@ public class Lab1InversionView extends VerticalLayout {
                     channel2MaxField.getValue(),
                     channel3FullCheckbox.getValue(),
                     channel3MinField.getValue(),
-                    channel3MaxField.getValue()
+                    channel3MaxField.getValue(),
+                    threadsCountField.getValue()
                 );
             }
         });
@@ -179,7 +188,8 @@ public class Lab1InversionView extends VerticalLayout {
                     channel2MaxField.getValue(),
                     channel3FullCheckbox.getValue(),
                     channel3MinField.getValue(),
-                    channel3MaxField.getValue()
+                    channel3MaxField.getValue(),
+                    threadsCountField.getValue()
                 );
             }
         });
@@ -228,5 +238,37 @@ public class Lab1InversionView extends VerticalLayout {
             histogram.add(line);
         }
         section.add(histogram);
+    }
+
+    public Component createResultSection(Double time) {
+        resultSection.removeAll();
+
+        resultSection.add(threadsCountField);
+
+        if (time != null) {
+            resultSection.add(new Span("Время выполнения: " + time + " с"));
+        }
+
+        resultSection.add(
+            new Button(
+                "Применить",
+                e -> presenter.splitImageToChannels(
+                    buffer.getInputStream(photoFileName),
+                    splitTypeComboBox.getValue(),
+                    channel1FullCheckbox.getValue(),
+                    channel1MinField.getValue(),
+                    channel1MaxField.getValue(),
+                    channel2FullCheckbox.getValue(),
+                    channel2MinField.getValue(),
+                    channel2MaxField.getValue(),
+                    channel3FullCheckbox.getValue(),
+                    channel3MinField.getValue(),
+                    channel3MaxField.getValue(),
+                    threadsCountField.getValue()
+                )
+            )
+        );
+
+        return resultSection;
     }
 }

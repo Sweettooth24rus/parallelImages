@@ -1,7 +1,6 @@
 package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
-import com.kkoz.parallels.PixelData;
 import com.kkoz.parallels.RGB;
 import com.kkoz.parallels.SplitType;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Lab1InversionPresenter {
     private final Lab1InversionView view;
@@ -33,7 +33,10 @@ public class Lab1InversionPresenter {
                                      String channel2MaxValue,
                                      boolean channel3Full,
                                      String channel3MinValue,
-                                     String channel3MaxValue) {
+                                     String channel3MaxValue,
+                                     String threadsCountValue) {
+        var threadsCount = Integer.parseInt(threadsCountValue);
+
         Integer channel1Min;
         Integer channel1Max;
         Integer channel2Min;
@@ -71,7 +74,8 @@ public class Lab1InversionPresenter {
             channel2Min,
             channel2Max,
             channel3Min,
-            channel3Max
+            channel3Max,
+            threadsCount
         );
     }
 
@@ -82,75 +86,148 @@ public class Lab1InversionPresenter {
                                      Integer channel2Min,
                                      Integer channel2Max,
                                      Integer channel3Min,
-                                     Integer channel3Max) {
+                                     Integer channel3Max,
+                                     Integer threads) {
         try {
             var bufferedImage = ImageIO.read(imageStream);
 
             var width = bufferedImage.getWidth();
             var height = bufferedImage.getHeight();
 
-            var redMatrix = new ArrayList<List<Integer>>(width);
-            var greenMatrix = new ArrayList<List<Integer>>(width);
-            var blueMatrix = new ArrayList<List<Integer>>(width);
-
-            List<Integer> redHeight;
-            List<Integer> greenHeight;
-            List<Integer> blueHeight;
+            var bufferedImageFirst = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var bufferedImageSecond = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var bufferedImageThird = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
             int[] channel1 = new int[type.getMaxValueCapacity(1)];
             int[] channel2 = new int[type.getMaxValueCapacity(2)];
             int[] channel3 = new int[type.getMaxValueCapacity(3)];
 
+            var redMatrix = new int[width][height];
+            var greenMatrix = new int[width][height];
+            var blueMatrix = new int[width][height];
+
+            var redResultMatrix = new int[width][height];
+            var greenResultMatrix = new int[width][height];
+            var blueResultMatrix = new int[width][height];
+
+            var redChannel1Matrix = new int[width][height];
+            var greenChannel1Matrix = new int[width][height];
+            var blueChannel1Matrix = new int[width][height];
+
+            var redChannel2Matrix = new int[width][height];
+            var greenChannel2Matrix = new int[width][height];
+            var blueChannel2Matrix = new int[width][height];
+
+            var redChannel3Matrix = new int[width][height];
+            var greenChannel3Matrix = new int[width][height];
+            var blueChannel3Matrix = new int[width][height];
+
             for (var x = 0; x < width; x++) {
-                redHeight = new ArrayList<>(height);
-                greenHeight = new ArrayList<>(height);
-                blueHeight = new ArrayList<>(height);
+                var redHeight = new int[height];
+                var greenHeight = new int[height];
+                var blueHeight = new int[height];
+
+                var redResultHeight = new int[height];
+                var greenResultHeight = new int[height];
+                var blueResultHeight = new int[height];
+
+                var redChannel1Height = new int[height];
+                var greenChannel1Height = new int[height];
+                var blueChannel1Height = new int[height];
+
+                var redChannel2Height = new int[height];
+                var greenChannel2Height = new int[height];
+                var blueChannel2Height = new int[height];
+
+                var redChannel3Height = new int[height];
+                var greenChannel3Height = new int[height];
+                var blueChannel3Height = new int[height];
 
                 for (var y = 0; y < height; y++) {
                     var color = new Color(bufferedImage.getRGB(x, y));
 
-                    redHeight.add(color.getRed());
-                    greenHeight.add(color.getGreen());
-                    blueHeight.add(color.getBlue());
+                    redHeight[y] = color.getRed();
+                    greenHeight[y] = color.getGreen();
+                    blueHeight[y] = color.getBlue();
                 }
-                redMatrix.add(x, redHeight);
-                greenMatrix.add(x, greenHeight);
-                blueMatrix.add(x, blueHeight);
+                redMatrix[x] = redHeight;
+                greenMatrix[x] = greenHeight;
+                blueMatrix[x] = blueHeight;
+
+                redResultMatrix[x] = redResultHeight;
+                greenResultMatrix[x] = greenResultHeight;
+                blueResultMatrix[x] = blueResultHeight;
+
+                redChannel1Matrix[x] = redChannel1Height;
+                greenChannel1Matrix[x] = greenChannel1Height;
+                blueChannel1Matrix[x] = blueChannel1Height;
+
+                redChannel2Matrix[x] = redChannel2Height;
+                greenChannel2Matrix[x] = greenChannel2Height;
+                blueChannel2Matrix[x] = blueChannel2Height;
+
+                redChannel3Matrix[x] = redChannel3Height;
+                greenChannel3Matrix[x] = greenChannel3Height;
+                blueChannel3Matrix[x] = blueChannel3Height;
             }
 
-            var bufferedImageFirst = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            var bufferedImageSecond = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            var bufferedImageThird = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var startTime = System.currentTimeMillis();
+
+            var executor = Executors.newFixedThreadPool(threads);
+
+            var valueTasks = new ArrayList<Future<Void>>();
+
+            for (var i = 0; i < threads; i++) {
+                var start = (width / threads) * i;
+                var end = (width / threads) * (i + 1);
+                valueTasks.add(
+                    executor.submit(
+                        () -> compute(
+                            redMatrix,
+                            greenMatrix,
+                            blueMatrix,
+                            height,
+                            start,
+                            end,
+                            type,
+                            channel1Min,
+                            channel1Max,
+                            channel2Min,
+                            channel2Max,
+                            channel3Min,
+                            channel3Max,
+                            redResultMatrix,
+                            greenResultMatrix,
+                            blueResultMatrix,
+                            redChannel1Matrix,
+                            greenChannel1Matrix,
+                            blueChannel1Matrix,
+                            redChannel2Matrix,
+                            greenChannel2Matrix,
+                            blueChannel2Matrix,
+                            redChannel3Matrix,
+                            greenChannel3Matrix,
+                            blueChannel3Matrix,
+                            channel1,
+                            channel2,
+                            channel3
+                        )
+                    )
+                );
+            }
+
+            for (var task : valueTasks) {
+                task.get();
+            }
+
+            var time = (System.currentTimeMillis() - startTime) / 1000.0;
 
             for (var x = 0; x < width; x++) {
-                redHeight = redMatrix.get(x);
-                greenHeight = greenMatrix.get(x);
-                blueHeight = blueMatrix.get(x);
-
                 for (var y = 0; y < height; y++) {
-                    var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
-                    var pixelData = splitImage(
-                        sourceRGB,
-                        type,
-                        channel1Min,
-                        channel1Max,
-                        channel2Min,
-                        channel2Max,
-                        channel3Min,
-                        channel3Max
-                    );
-                    var rgbArray = pixelData.getRgb();
-                    var channelArray = pixelData.getChannel();
-                    var newRGB = pixelData.getNewRGB();
-
-                    bufferedImage.setRGB(x, y, newRGB.getRGB());
-                    bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());
-                    bufferedImageSecond.setRGB(x, y, rgbArray[1].getRGB());
-                    bufferedImageThird.setRGB(x, y, rgbArray[2].getRGB());
-
-                    channel1[channelArray[0]]++;
-                    channel2[channelArray[1]]++;
-                    channel3[channelArray[2]]++;
+                    bufferedImage.setRGB(x, y, new RGB(redResultMatrix[x][y], greenResultMatrix[x][y], blueResultMatrix[x][y]).getRGB());
+                    bufferedImageFirst.setRGB(x, y, new RGB(redChannel1Matrix[x][y], greenChannel1Matrix[x][y], blueChannel1Matrix[x][y]).getRGB());
+                    bufferedImageSecond.setRGB(x, y, new RGB(redChannel2Matrix[x][y], greenChannel2Matrix[x][y], blueChannel2Matrix[x][y]).getRGB());
+                    bufferedImageThird.setRGB(x, y, new RGB(redChannel3Matrix[x][y], greenChannel3Matrix[x][y], blueChannel3Matrix[x][y]).getRGB());
                 }
             }
 
@@ -169,174 +246,231 @@ public class Lab1InversionPresenter {
                     channel3
                 )
             );
-        } catch (IOException ex) {
+
+            view.createResultSection(time);
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private PixelData splitImage(RGB sourceRGB,
-                                 SplitType type,
-                                 Integer channel1MinValue,
-                                 Integer channel1MaxValue,
-                                 Integer channel2MinValue,
-                                 Integer channel2MaxValue,
-                                 Integer channel3MinValue,
-                                 Integer channel3MaxValue) {
-        var rgbArray = new RGB[3];
-        var channelArray = new Integer[3];
+    private Void compute(int[][] redMatrix,
+                         int[][] greenMatrix,
+                         int[][] blueMatrix,
+                         int height,
+                         int start,
+                         int end,
+                         SplitType type,
+                         Integer channel1Min,
+                         Integer channel1Max,
+                         Integer channel2Min,
+                         Integer channel2Max,
+                         Integer channel3Min,
+                         Integer channel3Max,
+                         int[][] redResultMatrix,
+                         int[][] greenResultMatrix,
+                         int[][] blueResultMatrix,
+                         int[][] redChannel1Matrix,
+                         int[][] greenChannel1Matrix,
+                         int[][] blueChannel1Matrix,
+                         int[][] redChannel2Matrix,
+                         int[][] greenChannel2Matrix,
+                         int[][] blueChannel2Matrix,
+                         int[][] redChannel3Matrix,
+                         int[][] greenChannel3Matrix,
+                         int[][] blueChannel3Matrix,
+                         int[] channel1,
+                         int[] channel2,
+                         int[] channel3) {
+        for (int x = start; x < end; x++) {
+            for (var xy = 0; xy < height; xy++) {
+                var r = 0F;
+                var g = 0F;
+                var b = 0F;
 
-        var r = 0D;
-        var g = 0D;
-        var b = 0D;
+                switch (type) {
+                    case RGB -> {
+                        r = type.invert(1, redMatrix[x][xy], channel1Min, channel1Max);
+                        g = type.invert(2, greenMatrix[x][xy], channel2Min, channel2Max);
+                        b = type.invert(3, blueMatrix[x][xy], channel3Min, channel3Max);
 
-        switch (type) {
-            case RGB -> {
-                r = type.invert(1, sourceRGB.getRed(), channel1MinValue, channel1MaxValue);
-                g = type.invert(2, sourceRGB.getGreen(), channel2MinValue, channel2MaxValue);
-                b = type.invert(3, sourceRGB.getBlue(), channel3MinValue, channel3MaxValue);
+                        redChannel1Matrix[x][xy] = (int) r;
+                        greenChannel1Matrix[x][xy] = 0;
+                        blueChannel1Matrix[x][xy] = 0;
 
-                rgbArray[0] = RGB.fullRed((int) r);
-                rgbArray[1] = RGB.fullGreen((int) g);
-                rgbArray[2] = RGB.fullBlue((int) b);
+                        redChannel2Matrix[x][xy] = 0;
+                        greenChannel2Matrix[x][xy] = (int) g;
+                        blueChannel2Matrix[x][xy] = 0;
 
-                channelArray[0] = (int) r;
-                channelArray[1] = (int) g;
-                channelArray[2] = (int) b;
-            }
-            case HSV -> {
-                var red = sourceRGB.getRed();
-                var green = sourceRGB.getGreen();
-                var blue = sourceRGB.getBlue();
+                        redChannel3Matrix[x][xy] = 0;
+                        greenChannel3Matrix[x][xy] = 0;
+                        blueChannel3Matrix[x][xy] = (int) b;
 
-                var cmax = Math.max(Math.max(red, green), blue);
-                var cmin = Math.min(Math.min(red, green), blue);
-
-                double saturation;
-                double hue;
-
-                if (cmax == 0) {
-                    saturation = 0;
-                } else {
-                    saturation = type.invert(2, (double) (cmax - cmin) / cmax * 255, channel2MinValue, channel2MaxValue);
-                }
-
-                if (saturation == 0)
-                    hue = 0;
-                else {
-                    if (red == cmax) {
-                        hue = (double) (green - blue) / (cmax - cmin);
-                    } else if (green == cmax) {
-                        hue = 2 + (double) (blue - red) / (cmax - cmin);
-                    } else {
-                        hue = 4 + (double) (red - green) / (cmax - cmin);
+                        channel1[(int) r]++;
+                        channel2[(int) g]++;
+                        channel3[(int) b]++;
                     }
-                    hue /= 6;
-                    if (hue < 0)
-                        hue++;
+                    case HSV -> {
+                        var red = redMatrix[x][xy];
+                        var green = greenMatrix[x][xy];
+                        var blue = blueMatrix[x][xy];
+
+                        var cmax = Math.max(Math.max(red, green), blue);
+                        var cmin = Math.min(Math.min(red, green), blue);
+
+                        float saturation;
+                        float hue;
+
+                        if (cmax == 0) {
+                            saturation = 0;
+                        } else {
+                            saturation = type.invert(2, (float) (cmax - cmin) / cmax * 255, channel2Min, channel2Max);
+                        }
+
+                        if (saturation == 0)
+                            hue = 0;
+                        else {
+                            if (red == cmax) {
+                                hue = (float) (green - blue) / (cmax - cmin);
+                            } else if (green == cmax) {
+                                hue = 2 + (float) (blue - red) / (cmax - cmin);
+                            } else {
+                                hue = 4 + (float) (red - green) / (cmax - cmin);
+                            }
+                            hue /= 6;
+                            if (hue < 0)
+                                hue++;
+                        }
+
+                        cmax = type.invert(3, cmax, channel3Min, channel3Max);
+                        hue = type.invertHue(hue * 360, channel1Min, channel1Max) / 360;
+
+                        var h = (hue - Math.floor(hue)) * 6.0;
+                        var f = (int) ((h - Math.floor(h)) * 255 + 0.5);
+                        var q = (255 - f);
+                        switch ((int) h) {
+                            case 0:
+                                redChannel1Matrix[x][xy] = 255;
+                                greenChannel1Matrix[x][xy] = f;
+                                blueChannel1Matrix[x][xy] = 0;
+                                break;
+                            case 1:
+                                redChannel1Matrix[x][xy] = q;
+                                greenChannel1Matrix[x][xy] = 255;
+                                blueChannel1Matrix[x][xy] = 0;
+                                break;
+                            case 2:
+                                redChannel1Matrix[x][xy] = 0;
+                                greenChannel1Matrix[x][xy] = 255;
+                                blueChannel1Matrix[x][xy] = f;
+                                break;
+                            case 3:
+                                redChannel1Matrix[x][xy] = 0;
+                                greenChannel1Matrix[x][xy] = q;
+                                blueChannel1Matrix[x][xy] = 255;
+                                break;
+                            case 4:
+                                redChannel1Matrix[x][xy] = f;
+                                greenChannel1Matrix[x][xy] = 0;
+                                blueChannel1Matrix[x][xy] = 255;
+                                break;
+                            case 5:
+                                redChannel1Matrix[x][xy] = 255;
+                                greenChannel1Matrix[x][xy] = 0;
+                                blueChannel1Matrix[x][xy] = q;
+                                break;
+                        }
+
+                        redChannel2Matrix[x][xy] = (int) saturation;
+                        greenChannel2Matrix[x][xy] = (int) saturation;
+                        blueChannel2Matrix[x][xy] = (int) saturation;
+
+                        redChannel3Matrix[x][xy] = cmax;
+                        greenChannel3Matrix[x][xy] = cmax;
+                        blueChannel3Matrix[x][xy] = cmax;
+
+                        channel1[(int) (hue * 360)]++;
+                        channel2[(int) saturation]++;
+                        channel3[cmax]++;
+
+                        var p = cmax * (255 - saturation) / 255;
+                        q = (int) (cmax * (255 - saturation * f / 255) / 255);
+                        var t = cmax * (255 - (saturation * (255 - f) / 255)) / 255;
+                        switch ((int) h) {
+                            case 0:
+                                r = cmax;
+                                g = t;
+                                b = p;
+                                break;
+                            case 1:
+                                r = q;
+                                g = cmax;
+                                b = p;
+                                break;
+                            case 2:
+                                r = p;
+                                g = cmax;
+                                b = t;
+                                break;
+                            case 3:
+                                r = p;
+                                g = q;
+                                b = cmax;
+                                break;
+                            case 4:
+                                r = t;
+                                g = p;
+                                b = cmax;
+                                break;
+                            case 5:
+                                r = cmax;
+                                g = p;
+                                b = q;
+                                break;
+                        }
+                    }
+                    case YUV -> {
+                        var red = redMatrix[x][xy];
+                        var green = greenMatrix[x][xy];
+                        var blue = blueMatrix[x][xy];
+
+                        var y = type.invert(1, (float) (0.299 * red + 0.587 * green + 0.114 * blue), channel1Min, channel1Max);
+                        redChannel1Matrix[x][xy] = (int) y;
+                        greenChannel1Matrix[x][xy] = (int) y;
+                        blueChannel1Matrix[x][xy] = (int) y;
+
+                        var u = type.invert(2, (float) (-0.147 * red - 0.289 * green + 0.436 * blue) + 112, channel2Min, channel2Max) - 112;
+                        var ur = 127;
+                        var ug = (int) (127 - 0.395 * u);
+                        var ub = (int) (127 + 2.032 * u);
+                        redChannel2Matrix[x][xy] = ur;
+                        greenChannel2Matrix[x][xy] = ug;
+                        blueChannel2Matrix[x][xy] = ub;
+
+                        var v = type.invert(3, (float) (0.615 * red - 0.515 * green - 0.1 * blue) + 157, channel3Min, channel3Max) - 157;
+                        var vr = (int) (127 + 1.14 * v);
+                        var vg = (int) (127 - 0.581 * v);
+                        var vb = 127;
+                        redChannel1Matrix[x][xy] = vr;
+                        greenChannel1Matrix[x][xy] = vg;
+                        blueChannel1Matrix[x][xy] = vb;
+
+                        channel1[(int) y]++;
+                        channel2[(int) (u + 112)]++;
+                        channel3[(int) v + 157]++;
+
+                        r = y + 1.14f * v;
+                        g = y - 0.395f * u - 0.581f * v;
+                        b = y + 2.032f * u;
+                    }
                 }
 
-                cmax = type.invert(3, cmax, channel3MinValue, channel3MaxValue);
-                hue = type.invertHue(hue * 360, channel1MinValue, channel1MaxValue) / 360;
-
-                var h = (hue - Math.floor(hue)) * 6.0;
-                var f = (int) ((h - Math.floor(h)) * 255 + 0.5);
-                var q = (255 - f);
-                switch ((int) h) {
-                    case 0:
-                        rgbArray[0] = new RGB(255, f, 0);
-                        break;
-                    case 1:
-                        rgbArray[0] = new RGB(q, 255, 0);
-                        break;
-                    case 2:
-                        rgbArray[0] = new RGB(0, 255, f);
-                        break;
-                    case 3:
-                        rgbArray[0] = new RGB(0, q, 255);
-                        break;
-                    case 4:
-                        rgbArray[0] = new RGB(f, 0, 255);
-                        break;
-                    case 5:
-                        rgbArray[0] = new RGB(255, 0, q);
-                        break;
-                }
-
-                rgbArray[1] = RGB.grayScale((int) saturation);
-
-                rgbArray[2] = RGB.grayScale(cmax);
-
-                channelArray[0] = (int) (hue * 360);
-                channelArray[1] = (int) saturation;
-                channelArray[2] = cmax;
-
-                var p = cmax * (255 - saturation) / 255;
-                q = (int) (cmax * (255 - saturation * f / 255) / 255);
-                var t = cmax * (255 - (saturation * (255 - f) / 255)) / 255;
-                switch ((int) h) {
-                    case 0:
-                        r = cmax;
-                        g = t;
-                        b = p;
-                        break;
-                    case 1:
-                        r = q;
-                        g = cmax;
-                        b = p;
-                        break;
-                    case 2:
-                        r = p;
-                        g = cmax;
-                        b = t;
-                        break;
-                    case 3:
-                        r = p;
-                        g = q;
-                        b = cmax;
-                        break;
-                    case 4:
-                        r = t;
-                        g = p;
-                        b = cmax;
-                        break;
-                    case 5:
-                        r = cmax;
-                        g = p;
-                        b = q;
-                        break;
-                }
-            }
-            case YUV -> {
-                var red = sourceRGB.getRed();
-                var green = sourceRGB.getGreen();
-                var blue = sourceRGB.getBlue();
-
-                var y = type.invert(1, 0.299 * red + 0.587 * green + 0.114 * blue, channel1MinValue, channel1MaxValue);
-                rgbArray[0] = RGB.grayScale(y.intValue());
-
-                var u = type.invert(2, (-0.147 * red - 0.289 * green + 0.436 * blue) + 112, channel2MinValue, channel2MaxValue) - 112;
-                var ur = 127;
-                var ug = (int) (127 - 0.395 * u);
-                var ub = (int) (127 + 2.032 * u);
-                rgbArray[1] = new RGB(ur, ug, ub);
-
-                var v = type.invert(3, (0.615 * red - 0.515 * green - 0.1 * blue) + 157, channel3MinValue, channel3MaxValue) - 157;
-                var vr = (int) (127 + 1.14 * v);
-                var vg = (int) (127 - 0.581 * v);
-                var vb = 127;
-                rgbArray[2] = new RGB(vr, vg, vb);
-
-                channelArray[0] = y.intValue();
-                channelArray[1] = (int) (u + 112);
-                channelArray[2] = (int) v + 157;
-
-                r = y + 1.14 * v;
-                g = y - 0.395 * u - 0.581 * v;
-                b = y + 2.032 * u;
+                redResultMatrix[x][xy] = (int) r;
+                greenResultMatrix[x][xy] = (int) g;
+                blueResultMatrix[x][xy] = (int) b;
             }
         }
 
-        return new PixelData(rgbArray, new RGB(r, g, b), channelArray);
+        return null;
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {

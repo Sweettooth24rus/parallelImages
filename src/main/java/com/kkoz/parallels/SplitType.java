@@ -38,11 +38,7 @@ public enum SplitType {
         return getMaxValue(channel) + 1;
     }
 
-    public Integer invert(Integer channel, Integer value, Integer minValue, Integer maxValue) {
-        return invert(channel, value.doubleValue(), minValue, maxValue).intValue();
-    }
-
-    public Double invert(Integer channel, Double value, Integer minValue, Integer maxValue) {
+    public int invert(Integer channel, int value, Integer minValue, Integer maxValue) {
         if (minValue == null) {
             return value;
         }
@@ -52,7 +48,17 @@ public enum SplitType {
         return value;
     }
 
-    public Double invertHue(Double value, Integer minValue, Integer maxValue) {
+    public float invert(Integer channel, float value, Integer minValue, Integer maxValue) {
+        if (minValue == null) {
+            return value;
+        }
+        if (minValue <= value && maxValue >= value) {
+            return getMaxValue(channel) - value;
+        }
+        return value;
+    }
+
+    public float invertHue(float value, Integer minValue, Integer maxValue) {
         if (minValue == null) {
             return value;
         }

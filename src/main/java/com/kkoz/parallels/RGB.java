@@ -1,10 +1,12 @@
 package com.kkoz.parallels;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.awt.*;
 
 @Data
+@NoArgsConstructor
 public class RGB {
     private Integer red;
     private Integer green;
