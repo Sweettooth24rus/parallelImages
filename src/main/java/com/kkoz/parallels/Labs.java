@@ -29,7 +29,14 @@ public enum Labs {
             case LAB_2 -> {
                 start += "2/";
                 return Map.of(
-                    "Импульсный шум", start + "noises/impulse"
+                    "Импульсный шум", start + "noises/impulse",
+                    "Аддитивный шум", start + "noises/additive",
+                    "Мультипликативный шум", start + "noises/multiplicative",
+                    "Линейная фильтрация", start + "filters/linear",
+                    "Spatial smoother", start + "filters/spatial",
+                    "Kuwahara", start + "filters/kuwahara",
+                    "Рекурсивный среднеарифметический", start + "filters/recursive_avg",
+                    "Быстрый медианный", start + "filters/fast_median"
                 );
             }
             default -> {
