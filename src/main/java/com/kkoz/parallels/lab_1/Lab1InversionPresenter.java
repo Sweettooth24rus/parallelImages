@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -171,56 +172,36 @@ public class Lab1InversionPresenter {
                 blueChannel3Matrix[x] = blueChannel3Height;
             }
 
-            var startTime = System.currentTimeMillis();
-
-            var executor = Executors.newFixedThreadPool(threads);
-
-            var valueTasks = new ArrayList<Future<Void>>();
-
-            for (var i = 0; i < threads; i++) {
-                var start = (width / threads) * i;
-                var end = (width / threads) * (i + 1);
-                valueTasks.add(
-                    executor.submit(
-                        () -> compute(
-                            redMatrix,
-                            greenMatrix,
-                            blueMatrix,
-                            height,
-                            start,
-                            end,
-                            type,
-                            channel1Min,
-                            channel1Max,
-                            channel2Min,
-                            channel2Max,
-                            channel3Min,
-                            channel3Max,
-                            redResultMatrix,
-                            greenResultMatrix,
-                            blueResultMatrix,
-                            redChannel1Matrix,
-                            greenChannel1Matrix,
-                            blueChannel1Matrix,
-                            redChannel2Matrix,
-                            greenChannel2Matrix,
-                            blueChannel2Matrix,
-                            redChannel3Matrix,
-                            greenChannel3Matrix,
-                            blueChannel3Matrix,
-                            channel1,
-                            channel2,
-                            channel3
-                        )
-                    )
-                );
-            }
-
-            for (var task : valueTasks) {
-                task.get();
-            }
-
-            var time = (System.currentTimeMillis() - startTime) / 1000.0;
+            var time = startParallel(
+                threads,
+                redMatrix,
+                greenMatrix,
+                blueMatrix,
+                height,
+                width,
+                type,
+                channel1Min,
+                channel1Max,
+                channel2Min,
+                channel2Max,
+                channel3Min,
+                channel3Max,
+                redResultMatrix,
+                greenResultMatrix,
+                blueResultMatrix,
+                redChannel1Matrix,
+                greenChannel1Matrix,
+                blueChannel1Matrix,
+                redChannel2Matrix,
+                greenChannel2Matrix,
+                blueChannel2Matrix,
+                redChannel3Matrix,
+                greenChannel3Matrix,
+                blueChannel3Matrix,
+                channel1,
+                channel2,
+                channel3
+            );
 
             for (var x = 0; x < width; x++) {
                 for (var y = 0; y < height; y++) {
@@ -247,10 +228,92 @@ public class Lab1InversionPresenter {
                 )
             );
 
-            view.createResultSection(time);
+            view.createResultSection(time, null, null, null, null);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private double startParallel(Integer threads,
+                                 int[][] redMatrix,
+                                 int[][] greenMatrix,
+                                 int[][] blueMatrix,
+                                 int height,
+                                 int width,
+                                 SplitType type,
+                                 Integer channel1Min,
+                                 Integer channel1Max,
+                                 Integer channel2Min,
+                                 Integer channel2Max,
+                                 Integer channel3Min,
+                                 Integer channel3Max,
+                                 int[][] redResultMatrix,
+                                 int[][] greenResultMatrix,
+                                 int[][] blueResultMatrix,
+                                 int[][] redChannel1Matrix,
+                                 int[][] greenChannel1Matrix,
+                                 int[][] blueChannel1Matrix,
+                                 int[][] redChannel2Matrix,
+                                 int[][] greenChannel2Matrix,
+                                 int[][] blueChannel2Matrix,
+                                 int[][] redChannel3Matrix,
+                                 int[][] greenChannel3Matrix,
+                                 int[][] blueChannel3Matrix,
+                                 int[] channel1,
+                                 int[] channel2,
+                                 int[] channel3) throws ExecutionException, InterruptedException {
+        var startTime = System.currentTimeMillis();
+
+        var executor = Executors.newFixedThreadPool(threads);
+
+        var valueTasks = new ArrayList<Future<Void>>();
+
+        for (var i = 0; i < threads; i++) {
+            var start = (width / threads) * i;
+            var end = (width / threads) * (i + 1);
+            valueTasks.add(
+                executor.submit(
+                    () -> compute(
+                        redMatrix,
+                        greenMatrix,
+                        blueMatrix,
+                        height,
+                        start,
+                        end,
+                        type,
+                        channel1Min,
+                        channel1Max,
+                        channel2Min,
+                        channel2Max,
+                        channel3Min,
+                        channel3Max,
+                        redResultMatrix,
+                        greenResultMatrix,
+                        blueResultMatrix,
+                        redChannel1Matrix,
+                        greenChannel1Matrix,
+                        blueChannel1Matrix,
+                        redChannel2Matrix,
+                        greenChannel2Matrix,
+                        blueChannel2Matrix,
+                        redChannel3Matrix,
+                        greenChannel3Matrix,
+                        blueChannel3Matrix,
+                        channel1,
+                        channel2,
+                        channel3
+                    )
+                )
+            );
+        }
+
+        for (var task : valueTasks) {
+            task.get();
+        }
+
+        executor.shutdown();
+
+        return (System.currentTimeMillis() - startTime) / 1000.0;
     }
 
     private Void compute(int[][] redMatrix,
@@ -477,5 +540,248 @@ public class Lab1InversionPresenter {
         var byteBuffer = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "jpeg", byteBuffer);
         return new ByteArrayInputStream(byteBuffer.toByteArray());
+    }
+
+    public void calculateAverage(InputStream imageStream, SplitType type) {
+        try {
+
+            Integer channel1Min = 0;
+            Integer channel1Max = type.getMaxValue(1);
+            Integer channel2Min = 0;
+            Integer channel2Max = type.getMaxValue(2);
+            Integer channel3Min = 0;
+            Integer channel3Max = type.getMaxValue(3);
+
+            var bufferedImage = ImageIO.read(imageStream);
+
+            var width = bufferedImage.getWidth();
+            var height = bufferedImage.getHeight();
+
+            int[] channel1 = new int[type.getMaxValueCapacity(1)];
+            int[] channel2 = new int[type.getMaxValueCapacity(2)];
+            int[] channel3 = new int[type.getMaxValueCapacity(3)];
+
+            var redMatrix = new int[width][height];
+            var greenMatrix = new int[width][height];
+            var blueMatrix = new int[width][height];
+
+            var redResultMatrix = new int[width][height];
+            var greenResultMatrix = new int[width][height];
+            var blueResultMatrix = new int[width][height];
+
+            var redChannel1Matrix = new int[width][height];
+            var greenChannel1Matrix = new int[width][height];
+            var blueChannel1Matrix = new int[width][height];
+
+            var redChannel2Matrix = new int[width][height];
+            var greenChannel2Matrix = new int[width][height];
+            var blueChannel2Matrix = new int[width][height];
+
+            var redChannel3Matrix = new int[width][height];
+            var greenChannel3Matrix = new int[width][height];
+            var blueChannel3Matrix = new int[width][height];
+
+            for (var x = 0; x < width; x++) {
+                var redHeight = new int[height];
+                var greenHeight = new int[height];
+                var blueHeight = new int[height];
+
+                var redResultHeight = new int[height];
+                var greenResultHeight = new int[height];
+                var blueResultHeight = new int[height];
+
+                var redChannel1Height = new int[height];
+                var greenChannel1Height = new int[height];
+                var blueChannel1Height = new int[height];
+
+                var redChannel2Height = new int[height];
+                var greenChannel2Height = new int[height];
+                var blueChannel2Height = new int[height];
+
+                var redChannel3Height = new int[height];
+                var greenChannel3Height = new int[height];
+                var blueChannel3Height = new int[height];
+
+                for (var y = 0; y < height; y++) {
+                    var color = new Color(bufferedImage.getRGB(x, y));
+
+                    redHeight[y] = color.getRed();
+                    greenHeight[y] = color.getGreen();
+                    blueHeight[y] = color.getBlue();
+                }
+                redMatrix[x] = redHeight;
+                greenMatrix[x] = greenHeight;
+                blueMatrix[x] = blueHeight;
+
+                redResultMatrix[x] = redResultHeight;
+                greenResultMatrix[x] = greenResultHeight;
+                blueResultMatrix[x] = blueResultHeight;
+
+                redChannel1Matrix[x] = redChannel1Height;
+                greenChannel1Matrix[x] = greenChannel1Height;
+                blueChannel1Matrix[x] = blueChannel1Height;
+
+                redChannel2Matrix[x] = redChannel2Height;
+                greenChannel2Matrix[x] = greenChannel2Height;
+                blueChannel2Matrix[x] = blueChannel2Height;
+
+                redChannel3Matrix[x] = redChannel3Height;
+                greenChannel3Matrix[x] = greenChannel3Height;
+                blueChannel3Matrix[x] = blueChannel3Height;
+            }
+
+            var avgTime1 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime1 += startParallel(
+                    1,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    height,
+                    width,
+                    type,
+                    channel1Min,
+                    channel1Max,
+                    channel2Min,
+                    channel2Max,
+                    channel3Min,
+                    channel3Max,
+                    redResultMatrix,
+                    greenResultMatrix,
+                    blueResultMatrix,
+                    redChannel1Matrix,
+                    greenChannel1Matrix,
+                    blueChannel1Matrix,
+                    redChannel2Matrix,
+                    greenChannel2Matrix,
+                    blueChannel2Matrix,
+                    redChannel3Matrix,
+                    greenChannel3Matrix,
+                    blueChannel3Matrix,
+                    channel1,
+                    channel2,
+                    channel3
+                );
+            }
+
+            avgTime1 /= 10;
+
+            var avgTime2 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime2 += startParallel(
+                    2,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    height,
+                    width,
+                    type,
+                    channel1Min,
+                    channel1Max,
+                    channel2Min,
+                    channel2Max,
+                    channel3Min,
+                    channel3Max,
+                    redResultMatrix,
+                    greenResultMatrix,
+                    blueResultMatrix,
+                    redChannel1Matrix,
+                    greenChannel1Matrix,
+                    blueChannel1Matrix,
+                    redChannel2Matrix,
+                    greenChannel2Matrix,
+                    blueChannel2Matrix,
+                    redChannel3Matrix,
+                    greenChannel3Matrix,
+                    blueChannel3Matrix,
+                    channel1,
+                    channel2,
+                    channel3
+                );
+            }
+
+            avgTime2 /= 10;
+
+            var avgTime3 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime3 += startParallel(
+                    3,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    height,
+                    width,
+                    type,
+                    channel1Min,
+                    channel1Max,
+                    channel2Min,
+                    channel2Max,
+                    channel3Min,
+                    channel3Max,
+                    redResultMatrix,
+                    greenResultMatrix,
+                    blueResultMatrix,
+                    redChannel1Matrix,
+                    greenChannel1Matrix,
+                    blueChannel1Matrix,
+                    redChannel2Matrix,
+                    greenChannel2Matrix,
+                    blueChannel2Matrix,
+                    redChannel3Matrix,
+                    greenChannel3Matrix,
+                    blueChannel3Matrix,
+                    channel1,
+                    channel2,
+                    channel3
+                );
+            }
+
+            avgTime3 /= 10;
+
+            var avgTime4 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime4 += startParallel(
+                    4,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    height,
+                    width,
+                    type,
+                    channel1Min,
+                    channel1Max,
+                    channel2Min,
+                    channel2Max,
+                    channel3Min,
+                    channel3Max,
+                    redResultMatrix,
+                    greenResultMatrix,
+                    blueResultMatrix,
+                    redChannel1Matrix,
+                    greenChannel1Matrix,
+                    blueChannel1Matrix,
+                    redChannel2Matrix,
+                    greenChannel2Matrix,
+                    blueChannel2Matrix,
+                    redChannel3Matrix,
+                    greenChannel3Matrix,
+                    blueChannel3Matrix,
+                    channel1,
+                    channel2,
+                    channel3
+                );
+            }
+
+            avgTime4 /= 10;
+
+            view.createResultSection(null, avgTime1, avgTime2, avgTime3, avgTime4);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

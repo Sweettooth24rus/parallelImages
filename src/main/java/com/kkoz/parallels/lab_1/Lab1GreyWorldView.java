@@ -31,7 +31,7 @@ public class Lab1GreyWorldView extends VerticalLayout {
         threadsCountField.setLabel("Количество потоков");
         threadsCountField.setValue("1");
 
-        add(createUploadPhotoSection(), createResultSection(null), imageSection);
+        add(createUploadPhotoSection(), createResultSection(null, null, null, null, null), imageSection);
     }
 
     private Component createUploadPhotoSection() {
@@ -46,16 +46,47 @@ public class Lab1GreyWorldView extends VerticalLayout {
         return upload;
     }
 
-    public Component createResultSection(Double time) {
+    public Component createResultSection(Double time, Double avgTime1, Double avgTime2, Double avgTime3, Double avgTime4) {
         resultSection.removeAll();
 
-        resultSection.add(threadsCountField);
+        resultSection.add(
+            threadsCountField,
+            new Button(
+                "Применить",
+                e -> presenter.makeGray(
+                    buffer.getInputStream(photoFileName),
+                    threadsCountField.getValue()
+                )
+            ),
+            new Button(
+                "Вычислить среднее",
+                e -> presenter.calculateAverage(
+                    buffer.getInputStream(photoFileName)
+                )
+            )
+        );
+
 
         if (time != null) {
             resultSection.add(new Span("Время выполнения: " + time + " с"));
         }
 
-        resultSection.add(new Button("Применить", e -> presenter.makeGray(buffer.getInputStream(photoFileName), threadsCountField.getValue())));
+        if (avgTime1 != null) {
+            resultSection.add(new Span("Среднее время 1: " + avgTime1 + " с"));
+        }
+
+        if (avgTime2 != null) {
+            resultSection.add(new Span("Среднее время 2: " + avgTime2 + " с"));
+        }
+
+        if (avgTime3 != null) {
+            resultSection.add(new Span("Среднее время 3: " + avgTime3 + " с"));
+        }
+
+        if (avgTime4 != null) {
+            resultSection.add(new Span("Среднее время 4: " + avgTime4 + " с"));
+        }
+
 
         return resultSection;
     }

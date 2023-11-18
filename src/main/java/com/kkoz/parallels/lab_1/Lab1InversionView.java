@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.StringUtils;
@@ -28,19 +29,19 @@ public class Lab1InversionView extends VerticalLayout {
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout channelsSection = new HorizontalLayout();
     private final HorizontalLayout resultSection = new HorizontalLayout();
+    private final Checkbox channel1FullCheckbox = new Checkbox();
+    private final Checkbox channel2FullCheckbox = new Checkbox();
+    private final Checkbox channel3FullCheckbox = new Checkbox();
+    private final TextField channel1MinField = new TextField();
+    private final TextField channel1MaxField = new TextField();
+    private final TextField channel2MinField = new TextField();
+    private final TextField channel2MaxField = new TextField();
+    private final TextField channel3MinField = new TextField();
+    private final TextField channel3MaxField = new TextField();
     private final TextField threadsCountField = new TextField();
 
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
-    private Checkbox channel1FullCheckbox = new Checkbox();
-    private Checkbox channel2FullCheckbox = new Checkbox();
-    private Checkbox channel3FullCheckbox = new Checkbox();
-    private TextField channel1MinField = new TextField();
-    private TextField channel1MaxField = new TextField();
-    private TextField channel2MinField = new TextField();
-    private TextField channel2MaxField = new TextField();
-    private TextField channel3MinField = new TextField();
-    private TextField channel3MaxField = new TextField();
 
     Lab1InversionView() {
         presenter = new Lab1InversionPresenter(this);
@@ -61,11 +62,12 @@ public class Lab1InversionView extends VerticalLayout {
 
         threadsCountField.setLabel("Количество потоков");
         threadsCountField.setValue("1");
+        threadsCountField.setValueChangeMode(ValueChangeMode.EAGER);
 
         add(
             createUploadPhotoSection(),
             createSplitTypeComboBox(),
-            createResultSection(null),
+            createResultSection(null, null, null, null, null),
             imageSection,
             channelsSection
         );
@@ -240,16 +242,11 @@ public class Lab1InversionView extends VerticalLayout {
         section.add(histogram);
     }
 
-    public Component createResultSection(Double time) {
+    public Component createResultSection(Double time, Double avgTime1, Double avgTime2, Double avgTime3, Double avgTime4) {
         resultSection.removeAll();
 
-        resultSection.add(threadsCountField);
-
-        if (time != null) {
-            resultSection.add(new Span("Время выполнения: " + time + " с"));
-        }
-
         resultSection.add(
+            threadsCountField,
             new Button(
                 "Применить",
                 e -> presenter.splitImageToChannels(
@@ -266,8 +263,35 @@ public class Lab1InversionView extends VerticalLayout {
                     channel3MaxField.getValue(),
                     threadsCountField.getValue()
                 )
+            ),
+            new Button(
+                "Вычислить среднее",
+                e -> presenter.calculateAverage(
+                    buffer.getInputStream(photoFileName),
+                    splitTypeComboBox.getValue()
+                )
             )
         );
+
+        if (time != null) {
+            resultSection.add(new Span("Время выполнения: " + time + " с"));
+        }
+
+        if (avgTime1 != null) {
+            resultSection.add(new Span("Среднее время 1: " + avgTime1 + " с"));
+        }
+
+        if (avgTime2 != null) {
+            resultSection.add(new Span("Среднее время 2: " + avgTime2 + " с"));
+        }
+
+        if (avgTime3 != null) {
+            resultSection.add(new Span("Среднее время 3: " + avgTime3 + " с"));
+        }
+
+        if (avgTime4 != null) {
+            resultSection.add(new Span("Среднее время 4: " + avgTime4 + " с"));
+        }
 
         return resultSection;
     }
