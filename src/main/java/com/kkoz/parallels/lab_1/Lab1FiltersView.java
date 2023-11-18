@@ -1,6 +1,8 @@
 package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
+import com.kkoz.parallels.Labs;
+import com.kkoz.parallels.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.button.Button;
@@ -17,8 +19,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 @Route("/labs/1/filters")
-public class Lab1FiltersView extends VerticalLayout {
-    private final Lab1FiltersPresenter presenter;
+public class Lab1FiltersView extends View<Lab1FiltersPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout filterImageSection = new HorizontalLayout();
     private final HorizontalLayout filterChannelsSection = new HorizontalLayout();
@@ -27,8 +28,8 @@ public class Lab1FiltersView extends VerticalLayout {
     private TextField lightnessField;
     private TextField contrastField;
 
-    Lab1FiltersView() {
-        presenter = new Lab1FiltersPresenter(this);
+    public Lab1FiltersView() {
+        super(Lab1FiltersPresenter.class, Labs.LAB_1);
 
         add(
             createUploadPhotoSection(),

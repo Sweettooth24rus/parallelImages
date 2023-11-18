@@ -2,6 +2,7 @@ package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
 import com.kkoz.parallels.PixelData;
+import com.kkoz.parallels.Presenter;
 import com.kkoz.parallels.RGB;
 
 import javax.imageio.ImageIO;
@@ -14,11 +15,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lab1FiltersPresenter {
-    private final Lab1FiltersView view;
+public class Lab1FiltersPresenter extends Presenter<Lab1FiltersView> {
 
     public Lab1FiltersPresenter(Lab1FiltersView view) {
-        this.view = view;
+        super(view);
     }
 
     private PixelData splitImage(RGB sourceRGB, Integer lightness, Double contrast) {

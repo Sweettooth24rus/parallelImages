@@ -1,7 +1,9 @@
 package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
+import com.kkoz.parallels.Labs;
 import com.kkoz.parallels.SplitType;
+import com.kkoz.parallels.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.button.Button;
@@ -23,8 +25,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 @Route("/labs/1/inversion")
-public class Lab1InversionView extends VerticalLayout {
-    private final Lab1InversionPresenter presenter;
+public class Lab1InversionView extends View<Lab1InversionPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout channelsSection = new HorizontalLayout();
@@ -43,8 +44,8 @@ public class Lab1InversionView extends VerticalLayout {
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
 
-    Lab1InversionView() {
-        presenter = new Lab1InversionPresenter(this);
+    public Lab1InversionView() {
+        super(Lab1InversionPresenter.class, Labs.LAB_1);
 
         channel1FullCheckbox.setLabel("Инвертировать полностью");
         channel1FullCheckbox.setValue(true);

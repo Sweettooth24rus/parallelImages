@@ -1,5 +1,6 @@
 package com.kkoz.parallels.lab_1;
 
+import com.kkoz.parallels.Presenter;
 import com.kkoz.parallels.RGB;
 
 import javax.imageio.ImageIO;
@@ -14,11 +15,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class Lab1GreyWorldPresenter {
-    private final Lab1GreyWorldView view;
+public class Lab1GreyWorldPresenter extends Presenter<Lab1GreyWorldView> {
 
     public Lab1GreyWorldPresenter(Lab1GreyWorldView view) {
-        this.view = view;
+        super(view);
     }
 
     public void makeGray(InputStream imageStream, String threadsValue) {

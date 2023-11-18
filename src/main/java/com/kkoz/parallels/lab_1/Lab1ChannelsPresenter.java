@@ -1,9 +1,6 @@
 package com.kkoz.parallels.lab_1;
 
-import com.kkoz.parallels.ChannelData;
-import com.kkoz.parallels.PixelData;
-import com.kkoz.parallels.RGB;
-import com.kkoz.parallels.SplitType;
+import com.kkoz.parallels.*;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -15,11 +12,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lab1ChannelsPresenter {
-    private final Lab1ChannelsView view;
+public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
 
     public Lab1ChannelsPresenter(Lab1ChannelsView view) {
-        this.view = view;
+        super(view);
     }
 
     public void splitImageToChannels(InputStream imageStream, SplitType type) {

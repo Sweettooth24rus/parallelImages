@@ -1,12 +1,13 @@
 package com.kkoz.parallels.lab_1;
 
+import com.kkoz.parallels.Labs;
+import com.kkoz.parallels.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
@@ -16,8 +17,7 @@ import com.vaadin.flow.server.StreamResource;
 import java.io.InputStream;
 
 @Route("/labs/1/grey_world")
-public class Lab1GreyWorldView extends VerticalLayout {
-    private final Lab1GreyWorldPresenter presenter;
+public class Lab1GreyWorldView extends View<Lab1GreyWorldPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout resultSection = new HorizontalLayout();
@@ -25,8 +25,8 @@ public class Lab1GreyWorldView extends VerticalLayout {
 
     private String photoFileName;
 
-    Lab1GreyWorldView() {
-        presenter = new Lab1GreyWorldPresenter(this);
+    public Lab1GreyWorldView() {
+        super(Lab1GreyWorldPresenter.class, Labs.LAB_1);
 
         threadsCountField.setLabel("Количество потоков");
         threadsCountField.setValue("1");

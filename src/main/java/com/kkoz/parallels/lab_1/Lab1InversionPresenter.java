@@ -1,6 +1,7 @@
 package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
+import com.kkoz.parallels.Presenter;
 import com.kkoz.parallels.RGB;
 import com.kkoz.parallels.SplitType;
 import org.apache.commons.lang3.StringUtils;
@@ -17,11 +18,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class Lab1InversionPresenter {
-    private final Lab1InversionView view;
+public class Lab1InversionPresenter extends Presenter<Lab1InversionView> {
 
     public Lab1InversionPresenter(Lab1InversionView view) {
-        this.view = view;
+        super(view);
     }
 
     public void splitImageToChannels(InputStream imageStream,

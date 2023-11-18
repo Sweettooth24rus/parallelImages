@@ -1,7 +1,9 @@
 package com.kkoz.parallels.lab_1;
 
 import com.kkoz.parallels.ChannelData;
+import com.kkoz.parallels.Labs;
 import com.kkoz.parallels.SplitType;
+import com.kkoz.parallels.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -11,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,8 +21,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 @Route("/labs/1/channels")
-public class Lab1ChannelsView extends VerticalLayout {
-    private final Lab1ChannelsPresenter presenter;
+@RouteAlias("/labs/1")
+public class Lab1ChannelsView extends View<Lab1ChannelsPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout sourceImageSection = new HorizontalLayout();
     private final HorizontalLayout sourceChannelsSection = new HorizontalLayout();
@@ -27,8 +30,8 @@ public class Lab1ChannelsView extends VerticalLayout {
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
 
-    Lab1ChannelsView() {
-        presenter = new Lab1ChannelsPresenter(this);
+    public Lab1ChannelsView() {
+        super(Lab1ChannelsPresenter.class, Labs.LAB_1);
 
         add(
             createUploadPhotoSection(),
