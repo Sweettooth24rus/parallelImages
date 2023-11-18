@@ -33,8 +33,8 @@ public class View<P extends Presenter> extends VerticalLayout {
 
     private Component createInLabButtons(Labs lab) {
         var container = new HorizontalLayout();
-        for (var key : lab.getLabs().keySet()) {
-            container.add(createAnchorButton(key, lab.getLabs().get(key)));
+        for (var pair : lab.getLabs()) {
+            container.add(createAnchorButton(pair.getLeft(), pair.getRight()));
         }
         return container;
     }

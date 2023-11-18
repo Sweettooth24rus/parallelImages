@@ -2,8 +2,9 @@ package com.kkoz.parallels;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Map;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -13,34 +14,34 @@ public enum Labs {
 
     private final String url;
 
-    public Map<String, String> getLabs() {
+    public List<Pair<String, String>> getLabs() {
         var start = "http://localhost:8080/labs/";
 
         switch (this) {
             case LAB_1 -> {
                 start += "1/";
-                return Map.of(
-                    "Каналы", start + "channels",
-                    "Яркость/контрастность", start + "filters",
-                    "Инверсия", start + "inversion",
-                    "Серый мир", start + "grey_world"
+                return List.of(
+                    Pair.of("Каналы", start + "channels"),
+                    Pair.of("Яркость/контрастность", start + "filters"),
+                    Pair.of("Инверсия", start + "inversion"),
+                    Pair.of("Серый мир", start + "grey_world")
                 );
             }
             case LAB_2 -> {
                 start += "2/";
-                return Map.of(
-                    "Импульсный шум", start + "noises/impulse",
-                    "Аддитивный шум", start + "noises/additive",
-                    "Мультипликативный шум", start + "noises/multiplicative",
-                    "Линейная фильтрация", start + "filters/linear",
-                    "Spatial smoother", start + "filters/spatial",
-                    "Kuwahara", start + "filters/kuwahara",
-                    "Рекурсивный среднеарифметический", start + "filters/recursive_avg",
-                    "Быстрый медианный", start + "filters/fast_median"
+                return List.of(
+                    Pair.of("Импульсный шум", start + "noises/impulse"),
+                    Pair.of("Аддитивный шум", start + "noises/additive"),
+                    Pair.of("Мультипликативный шум", start + "noises/multiplicative"),
+                    Pair.of("Линейная фильтрация", start + "filters/linear"),
+                    Pair.of("Spatial smoother", start + "filters/spatial"),
+                    Pair.of("Kuwahara", start + "filters/kuwahara"),
+                    Pair.of("Рекурсивный среднеарифметический", start + "filters/recursive_avg"),
+                    Pair.of("Быстрый медианный", start + "filters/fast_median")
                 );
             }
             default -> {
-                return Map.of();
+                return List.of();
             }
         }
     }
