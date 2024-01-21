@@ -73,6 +73,7 @@ public class Lab2LinearFilterView extends View<Lab2LinearFilterPresenter> {
             if (StringUtils.isNotBlank(photoFileName)) {
                 presenter.filter(
                     buffer.getInputStream(photoFileName),
+                    threadsCountField.getValue(),
                     matrixSizeTextField.getValue(),
                     matrixCoefficients.stream().map(list -> list.stream().map(TextField::getValue).toList()).toList()
                 );
@@ -121,20 +122,24 @@ public class Lab2LinearFilterView extends View<Lab2LinearFilterPresenter> {
         resultSection.removeAll();
 
         resultSection.add(
-            threadsCountField
-//            new Button(
-//                "Применить",
-//                e -> presenter.makeGray(
-//                    buffer.getInputStream(photoFileName),
-//                    threadsCountField.getValue()
-//                )
-//            ),
-//            new Button(
-//                "Вычислить среднее",
-//                e -> presenter.calculateAverage(
-//                    buffer.getInputStream(photoFileName)
-//                )
-//            )
+            threadsCountField,
+            new Button(
+                "Применить",
+                e -> presenter.filter(
+                    buffer.getInputStream(photoFileName),
+                    threadsCountField.getValue(),
+                    matrixSizeTextField.getValue(),
+                    matrixCoefficients.stream().map(list -> list.stream().map(TextField::getValue).toList()).toList()
+                )
+            ),
+            new Button(
+                "Вычислить среднее",
+                e -> presenter.calculateAverage(
+                    buffer.getInputStream(photoFileName),
+                    matrixSizeTextField.getValue(),
+                    matrixCoefficients.stream().map(list -> list.stream().map(TextField::getValue).toList()).toList()
+                )
+            )
         );
 
         if (time != null) {
