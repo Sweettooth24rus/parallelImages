@@ -59,29 +59,11 @@ public class Lab2SpatialFilterPresenter extends Presenter<Lab2SpatialFilterView>
             var redMatrix = new int[width][height];
             var greenMatrix = new int[width][height];
             var blueMatrix = new int[width][height];
-            var channel1redMatrix = new int[width][height];
-            var channel1greenMatrix = new int[width][height];
-            var channel1blueMatrix = new int[width][height];
-            var channel2redMatrix = new int[width][height];
-            var channel2greenMatrix = new int[width][height];
-            var channel2blueMatrix = new int[width][height];
-            var channel3redMatrix = new int[width][height];
-            var channel3greenMatrix = new int[width][height];
-            var channel3blueMatrix = new int[width][height];
 
             for (var x = 0; x < width; x++) {
                 var redHeight = new int[height];
                 var greenHeight = new int[height];
                 var blueHeight = new int[height];
-                channel1redMatrix[x] = new int[height];
-                channel1greenMatrix[x] = new int[height];
-                channel1blueMatrix[x] = new int[height];
-                channel2redMatrix[x] = new int[height];
-                channel2greenMatrix[x] = new int[height];
-                channel2blueMatrix[x] = new int[height];
-                channel3redMatrix[x] = new int[height];
-                channel3greenMatrix[x] = new int[height];
-                channel3blueMatrix[x] = new int[height];
 
                 for (var y = 0; y < height; y++) {
                     var rgb = bufferedImage.getRGB(x, y);
@@ -139,8 +121,8 @@ public class Lab2SpatialFilterPresenter extends Presenter<Lab2SpatialFilterView>
 
                             bufferedImage.setRGB(xw, yh, new RGB((int) newRed, (int) newGreen, (int) newBlue).getRGB());
                             bufferedImageFirst.setRGB(xw, yh, RGB.fullRed((int) newRed).getRGB());
-                            bufferedImageSecond.setRGB(xw, yh, RGB.fullBlue((int) newBlue).getRGB());
-                            bufferedImageThird.setRGB(xw, yh, RGB.fullGreen((int) newGreen).getRGB());
+                            bufferedImageSecond.setRGB(xw, yh, RGB.fullGreen((int) newGreen).getRGB());
+                            bufferedImageThird.setRGB(xw, yh, RGB.fullBlue((int) newBlue).getRGB());
                         }
                         case YUV -> {
                             var red = redMatrix[xw][yh];
