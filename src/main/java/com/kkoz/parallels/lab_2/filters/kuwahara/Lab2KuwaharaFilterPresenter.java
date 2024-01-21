@@ -13,9 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Lab2SpatialFilterPresenter extends Presenter<Lab2SpatialFilterView> {
+public class Lab2KuwaharaFilterPresenter extends Presenter<Lab2KuwaharaFilterView> {
 
-    public Lab2SpatialFilterPresenter(Lab2SpatialFilterView view) {
+    public Lab2KuwaharaFilterPresenter(Lab2KuwaharaFilterView view) {
         super(view);
     }
 

@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.List;
 
 @Route("/labs/2/filters/kuwahara")
-public class Lab2SpatialFilterView extends View<Lab2SpatialFilterPresenter> {
+public class Lab2KuwaharaFilterView extends View<Lab2KuwaharaFilterPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout channelsSection = new HorizontalLayout();
@@ -36,8 +36,8 @@ public class Lab2SpatialFilterView extends View<Lab2SpatialFilterPresenter> {
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
 
-    public Lab2SpatialFilterView() {
-        super(Lab2SpatialFilterPresenter.class, Labs.LAB_2);
+    public Lab2KuwaharaFilterView() {
+        super(Lab2KuwaharaFilterPresenter.class, Labs.LAB_2);
 
         matrixWidthTextField.setLabel("Ширина");
         matrixWidthTextField.setValue("3");
