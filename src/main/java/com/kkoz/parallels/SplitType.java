@@ -3,18 +3,24 @@ package com.kkoz.parallels;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public enum SplitType {
     RGB("RGB"),
     HSV("HSV"),
-    YUV("YUV");
+    YUV("YUV"),
+    GREYSCALE("Grayscale");
 
     private final String name;
+
+    public static final List<SplitType> RGB_HSV_YUV = List.of(RGB, HSV, YUV);
 
     public Integer getMaxValue(Integer channel) {
         switch (this) {
             case RGB:
+            case GREYSCALE:
                 return 255;
             case HSV:
                 if (channel == 1) {

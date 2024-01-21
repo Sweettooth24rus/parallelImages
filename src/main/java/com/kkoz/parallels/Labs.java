@@ -10,7 +10,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum Labs {
     LAB_1("http://localhost:8080/labs/1"),
-    LAB_2("http://localhost:8080/labs/2");
+    LAB_2("http://localhost:8080/labs/2"),
+    LAB_3("http://localhost:8080/labs/3");
 
     private final String url;
 
@@ -38,6 +39,12 @@ public enum Labs {
                     Pair.of("Kuwahara", start + "filters/kuwahara"),
                     Pair.of("Рекурсивный среднеарифметический", start + "filters/recursive_avg"),
                     Pair.of("Быстрый медианный", start + "filters/fast_median")
+                );
+            }
+            case LAB_3 -> {
+                start += "3/";
+                return List.of(
+                    Pair.of("Контурное представление", start + "contour")
                 );
             }
             default -> {

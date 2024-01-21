@@ -60,7 +60,7 @@ public class Lab1ChannelsView extends View<Lab1ChannelsPresenter> {
 
     private ComboBox<SplitType> createSplitTypeComboBox() {
         splitTypeComboBox = new ComboBox<>();
-        splitTypeComboBox.setItems(SplitType.values());
+        splitTypeComboBox.setItems(SplitType.RGB_HSV_YUV);
         splitTypeComboBox.setValue(SplitType.RGB);
         splitTypeComboBox.addValueChangeListener(event -> {
             if (StringUtils.isNotBlank(photoFileName)) {

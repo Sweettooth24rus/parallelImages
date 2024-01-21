@@ -84,7 +84,7 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
 
     private ComboBox<SplitType> createSplitTypeComboBox() {
         splitTypeComboBox = new ComboBox<>();
-        splitTypeComboBox.setItems(SplitType.values());
+        splitTypeComboBox.setItems(SplitType.RGB_HSV_YUV);
         splitTypeComboBox.setValue(SplitType.RGB);
         splitTypeComboBox.addValueChangeListener(event -> {
             if (StringUtils.isNotBlank(photoFileName)) {
