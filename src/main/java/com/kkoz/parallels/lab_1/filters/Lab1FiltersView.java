@@ -1,43 +1,41 @@
-package com.kkoz.parallels.lab_1;
+package com.kkoz.parallels.lab_1.filters;
 
 import com.kkoz.parallels.ChannelData;
 import com.kkoz.parallels.Labs;
-import com.kkoz.parallels.SplitType;
 import com.kkoz.parallels.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.StreamResource;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.util.Arrays;
 
-@Route("/labs/1/channels")
-@RouteAlias("/labs/1")
-public class Lab1ChannelsView extends View<Lab1ChannelsPresenter> {
+@Route("/labs/1/filters")
+public class Lab1FiltersView extends View<Lab1FiltersPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
-    private final HorizontalLayout sourceImageSection = new HorizontalLayout();
-    private final HorizontalLayout sourceChannelsSection = new HorizontalLayout();
+    private final HorizontalLayout filterImageSection = new HorizontalLayout();
+    private final HorizontalLayout filterChannelsSection = new HorizontalLayout();
 
     private String photoFileName;
-    private ComboBox<SplitType> splitTypeComboBox;
+    private TextField lightnessField;
+    private TextField contrastField;
 
-    public Lab1ChannelsView() {
-        super(Lab1ChannelsPresenter.class, Labs.LAB_1);
+    public Lab1FiltersView() {
+        super(Lab1FiltersPresenter.class, Labs.LAB_1);
 
         add(
             createUploadPhotoSection(),
-            createSplitTypeComboBox(),
-            sourceImageSection,
-            sourceChannelsSection
+            createFilterSection(),
+            filterImageSection,
+            filterChannelsSection
         );
     }
 
@@ -46,11 +44,10 @@ public class Lab1ChannelsView extends View<Lab1ChannelsPresenter> {
 
         upload.addSucceededListener(event -> {
             photoFileName = event.getFileName();
-            var inputStream = buffer.getInputStream(photoFileName);
-            refreshSourcePhotoSection(inputStream);
-            presenter.splitImageToChannels(
+            presenter.applyYUVFilters(
                 buffer.getInputStream(photoFileName),
-                splitTypeComboBox.getValue()
+                lightnessField.getValue(),
+                contrastField.getValue()
             );
             upload.clearFileList();
         });
@@ -58,33 +55,29 @@ public class Lab1ChannelsView extends View<Lab1ChannelsPresenter> {
         return upload;
     }
 
-    private ComboBox<SplitType> createSplitTypeComboBox() {
-        splitTypeComboBox = new ComboBox<>();
-        splitTypeComboBox.setItems(SplitType.values());
-        splitTypeComboBox.setValue(SplitType.RGB);
-        splitTypeComboBox.addValueChangeListener(event -> {
-            if (StringUtils.isNotBlank(photoFileName)) {
-                presenter.splitImageToChannels(
-                    buffer.getInputStream(photoFileName),
-                    event.getValue()
-                );
-            }
-        });
-        return splitTypeComboBox;
-    }
+    private Component createFilterSection() {
+        var container = new HorizontalLayout();
+        container.getStyle().set("align-items", "end");
 
-    public void refreshSourcePhotoSection(InputStream sourceImageStream) {
-        sourceImageSection.removeAll();
-        addPhotoToSection(sourceImageSection, sourceImageStream, "Исходное фото");
-    }
+        lightnessField = new TextField("Яркость", "Введите величину изменения яркости");
+        lightnessField.setValue("0");
+        container.add(lightnessField);
 
-    public void refreshChannelsSection(ChannelData firstChannel,
-                                       ChannelData secondChannel,
-                                       ChannelData thirdChannel) {
-        sourceChannelsSection.removeAll();
-        addToSection(sourceChannelsSection, firstChannel, "Первый канал");
-        addToSection(sourceChannelsSection, secondChannel, "Второй канал");
-        addToSection(sourceChannelsSection, thirdChannel, "Третий канал");
+        contrastField = new TextField("Контрастность", "Введите коэффициент контрастности");
+        contrastField.setValue("1");
+        container.add(contrastField);
+
+        var submitButton = new Button(
+            "Применить",
+            e -> presenter.applyYUVFilters(
+                buffer.getInputStream(photoFileName),
+                lightnessField.getValue(),
+                contrastField.getValue()
+            )
+        );
+        container.add(submitButton);
+
+        return container;
     }
 
     private void addToSection(HorizontalLayout section, ChannelData data, String name) {
@@ -126,5 +119,20 @@ public class Lab1ChannelsView extends View<Lab1ChannelsPresenter> {
             histogram.add(line);
         }
         section.add(histogram);
+    }
+
+    public void refreshFilterPhotosSection(InputStream imageStream) {
+        filterImageSection.removeAll();
+        addPhotoToSection(filterImageSection, buffer.getInputStream(photoFileName), "До фильтра");
+        addPhotoToSection(filterImageSection, imageStream, "После фильтра");
+    }
+
+    public void refreshFilterChannelsSection(ChannelData firstChannel,
+                                             ChannelData secondChannel,
+                                             ChannelData thirdChannel) {
+        filterChannelsSection.removeAll();
+        addToSection(filterChannelsSection, firstChannel, "Первый канал");
+        addToSection(filterChannelsSection, secondChannel, "Второй канал");
+        addToSection(filterChannelsSection, thirdChannel, "Третий канал");
     }
 }

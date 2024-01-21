@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_2;
+package com.kkoz.parallels.lab_2.noises.additive_noise;
 
 import com.kkoz.parallels.*;
 
@@ -12,9 +12,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
+public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView> {
 
-    public Lab2ImpulseNoisePresenter(Lab2ImpulseNoiseView view) {
+    public Lab2AdditiveNoisePresenter(Lab2AdditiveNoiseView view) {
         super(view);
     }
 
@@ -23,16 +23,16 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                                      String channel1NoisePercentValue,
                                      String channel2NoisePercentValue,
                                      String channel3NoisePercentValue,
-                                     String channel1ImpulseProportionValue,
-                                     String channel2ImpulseProportionValue,
-                                     String channel3ImpulseProportionValue) {
+                                     String channel1MaximumDeviationValue,
+                                     String channel2MaximumDeviationValue,
+                                     String channel3MaximumDeviationValue) {
         try {
             var channel1NoisePercent = Integer.parseInt(channel1NoisePercentValue);
             var channel2NoisePercent = Integer.parseInt(channel2NoisePercentValue);
             var channel3NoisePercent = Integer.parseInt(channel3NoisePercentValue);
-            var channel1ImpulseProportion = Integer.parseInt(channel1ImpulseProportionValue);
-            var channel2ImpulseProportion = Integer.parseInt(channel2ImpulseProportionValue);
-            var channel3ImpulseProportion = Integer.parseInt(channel3ImpulseProportionValue);
+            var channel1MaximumDeviation = Integer.parseInt(channel1MaximumDeviationValue);
+            var channel2MaximumDeviation = Integer.parseInt(channel2MaximumDeviationValue);
+            var channel3MaximumDeviation = Integer.parseInt(channel3MaximumDeviationValue);
 
             var bufferedImage = ImageIO.read(imageStream);
 
@@ -100,9 +100,9 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                         channel1NoisePercent,
                         channel2NoisePercent,
                         channel3NoisePercent,
-                        channel1ImpulseProportion,
-                        channel2ImpulseProportion,
-                        channel3ImpulseProportion
+                        channel1MaximumDeviation,
+                        channel2MaximumDeviation,
+                        channel3MaximumDeviation
                     );
                     var rgbArray = pixelData.getRgb();
                     var channelArray = pixelData.getChannel();
@@ -145,9 +145,9 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                                  Integer channel1NoisePercent,
                                  Integer channel2NoisePercent,
                                  Integer channel3NoisePercent,
-                                 Integer channel1ImpulseProportion,
-                                 Integer channel2ImpulseProportion,
-                                 Integer channel3ImpulseProportion) {
+                                 Integer channel1MaximumDeviation,
+                                 Integer channel2MaximumDeviation,
+                                 Integer channel3MaximumDeviation) {
         var rgbArray = new RGB[3];
         var channelArray = new Integer[3];
 
@@ -162,27 +162,18 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                 b = sourceRGB.getBlue();
 
                 if (Math.random() * 100 <= channel1NoisePercent) {
-                    if (Math.random() * 100 <= channel1ImpulseProportion) {
-                        r = 0;
-                    } else {
-                        r = 255;
-                    }
+                    r += channel1MaximumDeviation;
+                    r = Math.max(0, Math.min(255, r));
                 }
 
                 if (Math.random() * 100 <= channel2NoisePercent) {
-                    if (Math.random() * 100 <= channel2ImpulseProportion) {
-                        g = 0;
-                    } else {
-                        g = 255;
-                    }
+                    g += channel2MaximumDeviation;
+                    g = Math.max(0, Math.min(255, g));
                 }
 
                 if (Math.random() * 100 <= channel3NoisePercent) {
-                    if (Math.random() * 100 <= channel3ImpulseProportion) {
-                        b = 0;
-                    } else {
-                        b = 255;
-                    }
+                    b += channel3MaximumDeviation;
+                    b = Math.max(0, Math.min(255, b));
                 }
 
                 rgbArray[0] = RGB.fullRed((int) r);
@@ -226,23 +217,21 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                 }
 
                 if (Math.random() * 100 <= channel1NoisePercent) {
-                    hue = (hue + 0.5) % 1;
+                    hue *= 360;
+                    hue += channel1MaximumDeviation;
+                    hue = hue % 360;
+                    hue /= 360;
                 }
 
                 if (Math.random() * 100 <= channel2NoisePercent) {
-                    if (Math.random() * 100 <= channel2ImpulseProportion) {
-                        saturation = 0;
-                    } else {
-                        saturation = 1;
-                    }
+                    saturation *= 255;
+                    saturation += channel2MaximumDeviation;
+                    saturation = Math.min(255, Math.max(0, saturation));
+                    saturation /= 255;
                 }
 
                 if (Math.random() * 100 <= channel3NoisePercent) {
-                    if (Math.random() * 100 <= channel3ImpulseProportion) {
-                        cmax = 0;
-                    } else {
-                        cmax = 255;
-                    }
+                    cmax = Math.min(255, Math.max(0, cmax + channel3MaximumDeviation));
                 }
 
                 var h = (hue - Math.floor(hue)) * 6.0;
@@ -323,11 +312,8 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                 var y = 0.299 * red + 0.587 * green + 0.114 * blue;
 
                 if (Math.random() * 100 <= channel1NoisePercent) {
-                    if (Math.random() * 100 <= channel1ImpulseProportion) {
-                        y = 0;
-                    } else {
-                        y = 255;
-                    }
+                    y += channel1MaximumDeviation;
+                    y = Math.max(0, Math.min(255, y));
                 }
 
                 rgbArray[0] = RGB.grayScale((int) y);
@@ -335,11 +321,8 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
                 var u = -0.147 * red - 0.289 * green + 0.436 * blue;
 
                 if (Math.random() * 100 <= channel2NoisePercent) {
-                    if (Math.random() * 100 <= channel2ImpulseProportion) {
-                        u = -112;
-                    } else {
-                        u = 112;
-                    }
+                    u += channel2MaximumDeviation;
+                    u = Math.max(112, Math.min(-112, u));
                 }
 
                 var ur = 127;
@@ -350,11 +333,8 @@ public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
 
                 var v = 0.615 * red - 0.515 * green - 0.1 * blue;
                 if (Math.random() * 100 <= channel3NoisePercent) {
-                    if (Math.random() * 100 <= channel3ImpulseProportion) {
-                        v = -157;
-                    } else {
-                        v = 157;
-                    }
+                    v += channel3MaximumDeviation;
+                    v = Math.max(157, Math.min(-157, v));
                 }
 
                 var vr = (int) (127 + 1.14 * v);

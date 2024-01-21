@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_1;
+package com.kkoz.parallels.lab_1.inversion;
 
 import com.kkoz.parallels.ChannelData;
 import com.kkoz.parallels.Labs;

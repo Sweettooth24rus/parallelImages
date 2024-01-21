@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_1;
+package com.kkoz.parallels.lab_1.grey_world;
 
 import com.kkoz.parallels.Presenter;
 import com.kkoz.parallels.RGB;

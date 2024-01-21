@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_1;
+package com.kkoz.parallels.lab_1.filters;
 
 import com.kkoz.parallels.ChannelData;
 import com.kkoz.parallels.PixelData;

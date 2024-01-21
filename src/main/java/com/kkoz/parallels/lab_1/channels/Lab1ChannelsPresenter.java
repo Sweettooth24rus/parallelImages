@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_2;
+package com.kkoz.parallels.lab_1.channels;
 
 import com.kkoz.parallels.*;
 
@@ -12,28 +12,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView> {
+public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
 
-    public Lab2AdditiveNoisePresenter(Lab2AdditiveNoiseView view) {
+    public Lab1ChannelsPresenter(Lab1ChannelsView view) {
         super(view);
     }
 
-    public void splitImageToChannels(InputStream imageStream,
-                                     SplitType type,
-                                     String channel1NoisePercentValue,
-                                     String channel2NoisePercentValue,
-                                     String channel3NoisePercentValue,
-                                     String channel1MaximumDeviationValue,
-                                     String channel2MaximumDeviationValue,
-                                     String channel3MaximumDeviationValue) {
+    public void splitImageToChannels(InputStream imageStream, SplitType type) {
         try {
-            var channel1NoisePercent = Integer.parseInt(channel1NoisePercentValue);
-            var channel2NoisePercent = Integer.parseInt(channel2NoisePercentValue);
-            var channel3NoisePercent = Integer.parseInt(channel3NoisePercentValue);
-            var channel1MaximumDeviation = Integer.parseInt(channel1MaximumDeviationValue);
-            var channel2MaximumDeviation = Integer.parseInt(channel2MaximumDeviationValue);
-            var channel3MaximumDeviation = Integer.parseInt(channel3MaximumDeviationValue);
-
             var bufferedImage = ImageIO.read(imageStream);
 
             var width = bufferedImage.getWidth();
@@ -94,21 +80,10 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
 
                 for (var y = 0; y < height; y++) {
                     var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
-                    var pixelData = splitImage(
-                        sourceRGB,
-                        type,
-                        channel1NoisePercent,
-                        channel2NoisePercent,
-                        channel3NoisePercent,
-                        channel1MaximumDeviation,
-                        channel2MaximumDeviation,
-                        channel3MaximumDeviation
-                    );
+                    var pixelData = splitImage(sourceRGB, type);
                     var rgbArray = pixelData.getRgb();
                     var channelArray = pixelData.getChannel();
-                    var newRGB = pixelData.getNewRGB();
 
-                    bufferedImage.setRGB(x, y, newRGB.getRGB());
                     bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());
                     bufferedImageSecond.setRGB(x, y, rgbArray[1].getRGB());
                     bufferedImageThird.setRGB(x, y, rgbArray[2].getRGB());
@@ -118,8 +93,6 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                     channel3[channelArray[2]]++;
                 }
             }
-
-            view.refreshPhotosSection(getInputStreamFromBufferedImage(bufferedImage));
 
             view.refreshChannelsSection(
                 new ChannelData(
@@ -135,54 +108,23 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                     channel3
                 )
             );
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    private PixelData splitImage(RGB sourceRGB,
-                                 SplitType type,
-                                 Integer channel1NoisePercent,
-                                 Integer channel2NoisePercent,
-                                 Integer channel3NoisePercent,
-                                 Integer channel1MaximumDeviation,
-                                 Integer channel2MaximumDeviation,
-                                 Integer channel3MaximumDeviation) {
+    private PixelData splitImage(RGB sourceRGB, SplitType type) {
         var rgbArray = new RGB[3];
         var channelArray = new Integer[3];
-
-        var r = 0f;
-        var g = 0f;
-        var b = 0f;
-
         switch (type) {
             case RGB -> {
-                r = sourceRGB.getRed();
-                g = sourceRGB.getGreen();
-                b = sourceRGB.getBlue();
+                rgbArray[0] = RGB.fullRed(sourceRGB);
+                rgbArray[1] = RGB.fullGreen(sourceRGB);
+                rgbArray[2] = RGB.fullBlue(sourceRGB);
 
-                if (Math.random() * 100 <= channel1NoisePercent) {
-                    r += channel1MaximumDeviation;
-                    r = Math.max(0, Math.min(255, r));
-                }
-
-                if (Math.random() * 100 <= channel2NoisePercent) {
-                    g += channel2MaximumDeviation;
-                    g = Math.max(0, Math.min(255, g));
-                }
-
-                if (Math.random() * 100 <= channel3NoisePercent) {
-                    b += channel3MaximumDeviation;
-                    b = Math.max(0, Math.min(255, b));
-                }
-
-                rgbArray[0] = RGB.fullRed((int) r);
-                rgbArray[1] = RGB.fullGreen((int) g);
-                rgbArray[2] = RGB.fullBlue((int) b);
-
-                channelArray[0] = (int) r;
-                channelArray[1] = (int) g;
-                channelArray[2] = (int) b;
+                channelArray[0] = sourceRGB.getRed();
+                channelArray[1] = sourceRGB.getGreen();
+                channelArray[2] = sourceRGB.getBlue();
             }
             case HSV -> {
                 var red = sourceRGB.getRed();
@@ -216,24 +158,6 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                         hue++;
                 }
 
-                if (Math.random() * 100 <= channel1NoisePercent) {
-                    hue *= 360;
-                    hue += channel1MaximumDeviation;
-                    hue = hue % 360;
-                    hue /= 360;
-                }
-
-                if (Math.random() * 100 <= channel2NoisePercent) {
-                    saturation *= 255;
-                    saturation += channel2MaximumDeviation;
-                    saturation = Math.min(255, Math.max(0, saturation));
-                    saturation /= 255;
-                }
-
-                if (Math.random() * 100 <= channel3NoisePercent) {
-                    cmax = Math.min(255, Math.max(0, cmax + channel3MaximumDeviation));
-                }
-
                 var h = (hue - Math.floor(hue)) * 6.0;
                 var f = (int) ((h - Math.floor(h)) * 255 + 0.5);
                 var q = (255 - f);
@@ -265,44 +189,6 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                 channelArray[0] = (int) (hue * 360);
                 channelArray[1] = (int) (saturation * 255);
                 channelArray[2] = cmax;
-
-                saturation *= 255;
-
-                var p = cmax * (255 - saturation) / 255;
-                q = (int) (cmax * (255 - saturation * f / 255) / 255);
-                var t = cmax * (255 - (saturation * (255 - f) / 255)) / 255;
-                switch ((int) h) {
-                    case 0:
-                        r = cmax;
-                        g = (float) t;
-                        b = (float) p;
-                        break;
-                    case 1:
-                        r = q;
-                        g = cmax;
-                        b = (float) p;
-                        break;
-                    case 2:
-                        r = (float) p;
-                        g = cmax;
-                        b = (float) t;
-                        break;
-                    case 3:
-                        r = (float) p;
-                        g = q;
-                        b = cmax;
-                        break;
-                    case 4:
-                        r = (float) t;
-                        g = (float) p;
-                        b = cmax;
-                        break;
-                    case 5:
-                        r = cmax;
-                        g = (float) p;
-                        b = q;
-                        break;
-                }
             }
             case YUV -> {
                 var red = sourceRGB.getRed();
@@ -310,50 +196,27 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                 var blue = sourceRGB.getBlue();
 
                 var y = 0.299 * red + 0.587 * green + 0.114 * blue;
-
-                if (Math.random() * 100 <= channel1NoisePercent) {
-                    y += channel1MaximumDeviation;
-                    y = Math.max(0, Math.min(255, y));
-                }
-
                 rgbArray[0] = RGB.grayScale((int) y);
 
                 var u = -0.147 * red - 0.289 * green + 0.436 * blue;
-
-                if (Math.random() * 100 <= channel2NoisePercent) {
-                    u += channel2MaximumDeviation;
-                    u = Math.max(112, Math.min(-112, u));
-                }
-
                 var ur = 127;
                 var ug = (int) (127 - 0.395 * u);
                 var ub = (int) (127 + 2.032 * u);
-
                 rgbArray[1] = new RGB(ur, ug, ub);
 
                 var v = 0.615 * red - 0.515 * green - 0.1 * blue;
-                if (Math.random() * 100 <= channel3NoisePercent) {
-                    v += channel3MaximumDeviation;
-                    v = Math.max(157, Math.min(-157, v));
-                }
-
                 var vr = (int) (127 + 1.14 * v);
                 var vg = (int) (127 - 0.581 * v);
                 var vb = 127;
-
                 rgbArray[2] = new RGB(vr, vg, vb);
 
                 channelArray[0] = (int) y;
                 channelArray[1] = (int) u + 112;
                 channelArray[2] = (int) v + 157;
-
-                r = (float) (y + 1.14f * v);
-                g = (float) (y - 0.395f * u - 0.581f * v);
-                b = (float) (y + 2.032f * u);
             }
         }
 
-        return new PixelData(rgbArray, new RGB((int) r, (int) g, (int) b), channelArray);
+        return new PixelData(rgbArray, channelArray);
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {

@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_2;
+package com.kkoz.parallels.lab_2.noises.impulse_noise;
 
 import com.kkoz.parallels.ChannelData;
 import com.kkoz.parallels.Labs;
@@ -15,29 +15,32 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.util.Arrays;
 
-@Route("/labs/2/noises/additive")
-public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
+@Route("/labs/2/noises/impulse")
+@RouteAlias("/labs/2/noises")
+@RouteAlias("/labs/2")
+public class Lab2ImpulseNoiseView extends View<Lab2ImpulseNoisePresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout channelsSection = new HorizontalLayout();
     private final TextField channel1NoisePercentTextField = new TextField();
     private final TextField channel2NoisePercentTextField = new TextField();
     private final TextField channel3NoisePercentTextField = new TextField();
-    private final TextField channel1MaximumDeviationTextField = new TextField();
-    private final TextField channel2MaximumDeviationTextField = new TextField();
-    private final TextField channel3MaximumDeviationTextField = new TextField();
+    private final TextField channel1ImpulseProportionTextField = new TextField();
+    private final TextField channel2ImpulseProportionTextField = new TextField();
+    private final TextField channel3ImpulseProportionTextField = new TextField();
 
     private String photoFileName;
     private ComboBox<SplitType> splitTypeComboBox;
 
-    public Lab2AdditiveNoiseView() {
-        super(Lab2AdditiveNoisePresenter.class, Labs.LAB_2);
+    public Lab2ImpulseNoiseView() {
+        super(Lab2ImpulseNoisePresenter.class, Labs.LAB_2);
 
         channel1NoisePercentTextField.setLabel("Процент шума");
         channel1NoisePercentTextField.setValue("0");
@@ -46,12 +49,12 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
         channel3NoisePercentTextField.setLabel("Процент шума");
         channel3NoisePercentTextField.setValue("0");
 
-        channel1MaximumDeviationTextField.setLabel("Максимальное отклонение");
-        channel1MaximumDeviationTextField.setValue("0");
-        channel2MaximumDeviationTextField.setLabel("Максимальное отклонение");
-        channel2MaximumDeviationTextField.setValue("0");
-        channel3MaximumDeviationTextField.setLabel("Максимальное отклонение");
-        channel3MaximumDeviationTextField.setValue("0");
+        channel1ImpulseProportionTextField.setLabel("Вероятность импульса");
+        channel1ImpulseProportionTextField.setValue("50");
+        channel2ImpulseProportionTextField.setLabel("Вероятность импульса");
+        channel2ImpulseProportionTextField.setValue("50");
+        channel3ImpulseProportionTextField.setLabel("Вероятность импульса");
+        channel3ImpulseProportionTextField.setValue("50");
 
         add(
             createUploadPhotoSection(),
@@ -72,9 +75,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                 channel1NoisePercentTextField.getValue(),
                 channel2NoisePercentTextField.getValue(),
                 channel3NoisePercentTextField.getValue(),
-                channel1MaximumDeviationTextField.getValue(),
-                channel2MaximumDeviationTextField.getValue(),
-                channel3MaximumDeviationTextField.getValue()
+                channel1ImpulseProportionTextField.getValue(),
+                channel2ImpulseProportionTextField.getValue(),
+                channel3ImpulseProportionTextField.getValue()
             );
             upload.clearFileList();
         });
@@ -94,9 +97,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                     channel1NoisePercentTextField.getValue(),
                     channel2NoisePercentTextField.getValue(),
                     channel3NoisePercentTextField.getValue(),
-                    channel1MaximumDeviationTextField.getValue(),
-                    channel2MaximumDeviationTextField.getValue(),
-                    channel3MaximumDeviationTextField.getValue()
+                    channel1ImpulseProportionTextField.getValue(),
+                    channel2ImpulseProportionTextField.getValue(),
+                    channel3ImpulseProportionTextField.getValue()
                 );
             }
         });
@@ -113,9 +116,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                                        ChannelData secondChannel,
                                        ChannelData thirdChannel) {
         channelsSection.removeAll();
-        addToSection(channelsSection, firstChannel, "Первый канал", channel1NoisePercentTextField, channel1MaximumDeviationTextField);
-        addToSection(channelsSection, secondChannel, "Второй канал", channel2NoisePercentTextField, channel2MaximumDeviationTextField);
-        addToSection(channelsSection, thirdChannel, "Третий канал", channel3NoisePercentTextField, channel3MaximumDeviationTextField);
+        addToSection(channelsSection, firstChannel, "Первый канал", channel1NoisePercentTextField, channel1ImpulseProportionTextField);
+        addToSection(channelsSection, secondChannel, "Второй канал", channel2NoisePercentTextField, channel2ImpulseProportionTextField);
+        addToSection(channelsSection, thirdChannel, "Третий канал", channel3NoisePercentTextField, channel3ImpulseProportionTextField);
     }
 
     private void addToSection(HorizontalLayout section,
@@ -135,9 +138,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                     channel1NoisePercentTextField.getValue(),
                     channel2NoisePercentTextField.getValue(),
                     channel3NoisePercentTextField.getValue(),
-                    channel1MaximumDeviationTextField.getValue(),
-                    channel2MaximumDeviationTextField.getValue(),
-                    channel3MaximumDeviationTextField.getValue()
+                    channel1ImpulseProportionTextField.getValue(),
+                    channel2ImpulseProportionTextField.getValue(),
+                    channel3ImpulseProportionTextField.getValue()
                 );
             }
         });

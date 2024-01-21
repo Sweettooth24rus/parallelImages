@@ -1,4 +1,4 @@
-package com.kkoz.parallels.lab_1;
+package com.kkoz.parallels.lab_2.noises.impulse_noise;
 
 import com.kkoz.parallels.*;
 
@@ -12,14 +12,28 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
+public class Lab2ImpulseNoisePresenter extends Presenter<Lab2ImpulseNoiseView> {
 
-    public Lab1ChannelsPresenter(Lab1ChannelsView view) {
+    public Lab2ImpulseNoisePresenter(Lab2ImpulseNoiseView view) {
         super(view);
     }
 
-    public void splitImageToChannels(InputStream imageStream, SplitType type) {
+    public void splitImageToChannels(InputStream imageStream,
+                                     SplitType type,
+                                     String channel1NoisePercentValue,
+                                     String channel2NoisePercentValue,
+                                     String channel3NoisePercentValue,
+                                     String channel1ImpulseProportionValue,
+                                     String channel2ImpulseProportionValue,
+                                     String channel3ImpulseProportionValue) {
         try {
+            var channel1NoisePercent = Integer.parseInt(channel1NoisePercentValue);
+            var channel2NoisePercent = Integer.parseInt(channel2NoisePercentValue);
+            var channel3NoisePercent = Integer.parseInt(channel3NoisePercentValue);
+            var channel1ImpulseProportion = Integer.parseInt(channel1ImpulseProportionValue);
+            var channel2ImpulseProportion = Integer.parseInt(channel2ImpulseProportionValue);
+            var channel3ImpulseProportion = Integer.parseInt(channel3ImpulseProportionValue);
+
             var bufferedImage = ImageIO.read(imageStream);
 
             var width = bufferedImage.getWidth();
@@ -80,10 +94,21 @@ public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
 
                 for (var y = 0; y < height; y++) {
                     var sourceRGB = new RGB(redHeight.get(y), greenHeight.get(y), blueHeight.get(y));
-                    var pixelData = splitImage(sourceRGB, type);
+                    var pixelData = splitImage(
+                        sourceRGB,
+                        type,
+                        channel1NoisePercent,
+                        channel2NoisePercent,
+                        channel3NoisePercent,
+                        channel1ImpulseProportion,
+                        channel2ImpulseProportion,
+                        channel3ImpulseProportion
+                    );
                     var rgbArray = pixelData.getRgb();
                     var channelArray = pixelData.getChannel();
+                    var newRGB = pixelData.getNewRGB();
 
+                    bufferedImage.setRGB(x, y, newRGB.getRGB());
                     bufferedImageFirst.setRGB(x, y, rgbArray[0].getRGB());
                     bufferedImageSecond.setRGB(x, y, rgbArray[1].getRGB());
                     bufferedImageThird.setRGB(x, y, rgbArray[2].getRGB());
@@ -93,6 +118,8 @@ public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
                     channel3[channelArray[2]]++;
                 }
             }
+
+            view.refreshPhotosSection(getInputStreamFromBufferedImage(bufferedImage));
 
             view.refreshChannelsSection(
                 new ChannelData(
@@ -108,23 +135,63 @@ public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
                     channel3
                 )
             );
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private PixelData splitImage(RGB sourceRGB, SplitType type) {
+    private PixelData splitImage(RGB sourceRGB,
+                                 SplitType type,
+                                 Integer channel1NoisePercent,
+                                 Integer channel2NoisePercent,
+                                 Integer channel3NoisePercent,
+                                 Integer channel1ImpulseProportion,
+                                 Integer channel2ImpulseProportion,
+                                 Integer channel3ImpulseProportion) {
         var rgbArray = new RGB[3];
         var channelArray = new Integer[3];
+
+        var r = 0f;
+        var g = 0f;
+        var b = 0f;
+
         switch (type) {
             case RGB -> {
-                rgbArray[0] = RGB.fullRed(sourceRGB);
-                rgbArray[1] = RGB.fullGreen(sourceRGB);
-                rgbArray[2] = RGB.fullBlue(sourceRGB);
+                r = sourceRGB.getRed();
+                g = sourceRGB.getGreen();
+                b = sourceRGB.getBlue();
 
-                channelArray[0] = sourceRGB.getRed();
-                channelArray[1] = sourceRGB.getGreen();
-                channelArray[2] = sourceRGB.getBlue();
+                if (Math.random() * 100 <= channel1NoisePercent) {
+                    if (Math.random() * 100 <= channel1ImpulseProportion) {
+                        r = 0;
+                    } else {
+                        r = 255;
+                    }
+                }
+
+                if (Math.random() * 100 <= channel2NoisePercent) {
+                    if (Math.random() * 100 <= channel2ImpulseProportion) {
+                        g = 0;
+                    } else {
+                        g = 255;
+                    }
+                }
+
+                if (Math.random() * 100 <= channel3NoisePercent) {
+                    if (Math.random() * 100 <= channel3ImpulseProportion) {
+                        b = 0;
+                    } else {
+                        b = 255;
+                    }
+                }
+
+                rgbArray[0] = RGB.fullRed((int) r);
+                rgbArray[1] = RGB.fullGreen((int) g);
+                rgbArray[2] = RGB.fullBlue((int) b);
+
+                channelArray[0] = (int) r;
+                channelArray[1] = (int) g;
+                channelArray[2] = (int) b;
             }
             case HSV -> {
                 var red = sourceRGB.getRed();
@@ -158,6 +225,26 @@ public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
                         hue++;
                 }
 
+                if (Math.random() * 100 <= channel1NoisePercent) {
+                    hue = (hue + 0.5) % 1;
+                }
+
+                if (Math.random() * 100 <= channel2NoisePercent) {
+                    if (Math.random() * 100 <= channel2ImpulseProportion) {
+                        saturation = 0;
+                    } else {
+                        saturation = 1;
+                    }
+                }
+
+                if (Math.random() * 100 <= channel3NoisePercent) {
+                    if (Math.random() * 100 <= channel3ImpulseProportion) {
+                        cmax = 0;
+                    } else {
+                        cmax = 255;
+                    }
+                }
+
                 var h = (hue - Math.floor(hue)) * 6.0;
                 var f = (int) ((h - Math.floor(h)) * 255 + 0.5);
                 var q = (255 - f);
@@ -189,6 +276,44 @@ public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
                 channelArray[0] = (int) (hue * 360);
                 channelArray[1] = (int) (saturation * 255);
                 channelArray[2] = cmax;
+
+                saturation *= 255;
+
+                var p = cmax * (255 - saturation) / 255;
+                q = (int) (cmax * (255 - saturation * f / 255) / 255);
+                var t = cmax * (255 - (saturation * (255 - f) / 255)) / 255;
+                switch ((int) h) {
+                    case 0:
+                        r = cmax;
+                        g = (float) t;
+                        b = (float) p;
+                        break;
+                    case 1:
+                        r = q;
+                        g = cmax;
+                        b = (float) p;
+                        break;
+                    case 2:
+                        r = (float) p;
+                        g = cmax;
+                        b = (float) t;
+                        break;
+                    case 3:
+                        r = (float) p;
+                        g = q;
+                        b = cmax;
+                        break;
+                    case 4:
+                        r = (float) t;
+                        g = (float) p;
+                        b = cmax;
+                        break;
+                    case 5:
+                        r = cmax;
+                        g = (float) p;
+                        b = q;
+                        break;
+                }
             }
             case YUV -> {
                 var red = sourceRGB.getRed();
@@ -196,27 +321,59 @@ public class Lab1ChannelsPresenter extends Presenter<Lab1ChannelsView> {
                 var blue = sourceRGB.getBlue();
 
                 var y = 0.299 * red + 0.587 * green + 0.114 * blue;
+
+                if (Math.random() * 100 <= channel1NoisePercent) {
+                    if (Math.random() * 100 <= channel1ImpulseProportion) {
+                        y = 0;
+                    } else {
+                        y = 255;
+                    }
+                }
+
                 rgbArray[0] = RGB.grayScale((int) y);
 
                 var u = -0.147 * red - 0.289 * green + 0.436 * blue;
+
+                if (Math.random() * 100 <= channel2NoisePercent) {
+                    if (Math.random() * 100 <= channel2ImpulseProportion) {
+                        u = -112;
+                    } else {
+                        u = 112;
+                    }
+                }
+
                 var ur = 127;
                 var ug = (int) (127 - 0.395 * u);
                 var ub = (int) (127 + 2.032 * u);
+
                 rgbArray[1] = new RGB(ur, ug, ub);
 
                 var v = 0.615 * red - 0.515 * green - 0.1 * blue;
+                if (Math.random() * 100 <= channel3NoisePercent) {
+                    if (Math.random() * 100 <= channel3ImpulseProportion) {
+                        v = -157;
+                    } else {
+                        v = 157;
+                    }
+                }
+
                 var vr = (int) (127 + 1.14 * v);
                 var vg = (int) (127 - 0.581 * v);
                 var vb = 127;
+
                 rgbArray[2] = new RGB(vr, vg, vb);
 
                 channelArray[0] = (int) y;
                 channelArray[1] = (int) u + 112;
                 channelArray[2] = (int) v + 157;
+
+                r = (float) (y + 1.14f * v);
+                g = (float) (y - 0.395f * u - 0.581f * v);
+                b = (float) (y + 2.032f * u);
             }
         }
 
-        return new PixelData(rgbArray, channelArray);
+        return new PixelData(rgbArray, new RGB((int) r, (int) g, (int) b), channelArray);
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
