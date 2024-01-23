@@ -23,6 +23,9 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                                      String channel1NoisePercentValue,
                                      String channel2NoisePercentValue,
                                      String channel3NoisePercentValue,
+                                     String channel1MinimumDeviationValue,
+                                     String channel2MinimumDeviationValue,
+                                     String channel3MinimumDeviationValue,
                                      String channel1MaximumDeviationValue,
                                      String channel2MaximumDeviationValue,
                                      String channel3MaximumDeviationValue) {
@@ -30,6 +33,9 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
             var channel1NoisePercent = Integer.parseInt(channel1NoisePercentValue);
             var channel2NoisePercent = Integer.parseInt(channel2NoisePercentValue);
             var channel3NoisePercent = Integer.parseInt(channel3NoisePercentValue);
+            var channel1MinimumDeviation = Integer.parseInt(channel1MinimumDeviationValue);
+            var channel2MinimumDeviation = Integer.parseInt(channel2MinimumDeviationValue);
+            var channel3MinimumDeviation = Integer.parseInt(channel3MinimumDeviationValue);
             var channel1MaximumDeviation = Integer.parseInt(channel1MaximumDeviationValue);
             var channel2MaximumDeviation = Integer.parseInt(channel2MaximumDeviationValue);
             var channel3MaximumDeviation = Integer.parseInt(channel3MaximumDeviationValue);
@@ -100,6 +106,9 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                         channel1NoisePercent,
                         channel2NoisePercent,
                         channel3NoisePercent,
+                        channel1MinimumDeviation,
+                        channel2MinimumDeviation,
+                        channel3MinimumDeviation,
                         channel1MaximumDeviation,
                         channel2MaximumDeviation,
                         channel3MaximumDeviation
@@ -145,6 +154,9 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                                  Integer channel1NoisePercent,
                                  Integer channel2NoisePercent,
                                  Integer channel3NoisePercent,
+                                 Integer channel1MinimumDeviation,
+                                 Integer channel2MinimumDeviation,
+                                 Integer channel3MinimumDeviation,
                                  Integer channel1MaximumDeviation,
                                  Integer channel2MaximumDeviation,
                                  Integer channel3MaximumDeviation) {
@@ -162,17 +174,17 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                 b = sourceRGB.getBlue();
 
                 if (Math.random() * 100 <= channel1NoisePercent) {
-                    r += channel1MaximumDeviation;
+                    r += Math.random() * (channel1MaximumDeviation - channel1MinimumDeviation) + channel1MinimumDeviation;
                     r = Math.max(0, Math.min(255, r));
                 }
 
                 if (Math.random() * 100 <= channel2NoisePercent) {
-                    g += channel2MaximumDeviation;
+                    g += Math.random() * (channel2MaximumDeviation - channel2MinimumDeviation) + channel2MinimumDeviation;
                     g = Math.max(0, Math.min(255, g));
                 }
 
                 if (Math.random() * 100 <= channel3NoisePercent) {
-                    b += channel3MaximumDeviation;
+                    b += Math.random() * (channel3MaximumDeviation - channel3MinimumDeviation) + channel3MinimumDeviation;
                     b = Math.max(0, Math.min(255, b));
                 }
 
@@ -218,20 +230,20 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
 
                 if (Math.random() * 100 <= channel1NoisePercent) {
                     hue *= 360;
-                    hue += channel1MaximumDeviation;
+                    hue += Math.random() * (channel1MaximumDeviation - channel1MinimumDeviation) + channel1MinimumDeviation;
                     hue = hue % 360;
                     hue /= 360;
                 }
 
                 if (Math.random() * 100 <= channel2NoisePercent) {
                     saturation *= 255;
-                    saturation += channel2MaximumDeviation;
+                    saturation += Math.random() * (channel2MaximumDeviation - channel2MinimumDeviation) + channel2MinimumDeviation;
                     saturation = Math.min(255, Math.max(0, saturation));
                     saturation /= 255;
                 }
 
                 if (Math.random() * 100 <= channel3NoisePercent) {
-                    cmax = Math.min(255, Math.max(0, cmax + channel3MaximumDeviation));
+                    cmax = (int) Math.min(255, Math.max(0, cmax + Math.random() * (channel3MaximumDeviation - channel3MinimumDeviation) + channel3MinimumDeviation));
                 }
 
                 var h = (hue - Math.floor(hue)) * 6.0;
@@ -312,7 +324,7 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                 var y = 0.299 * red + 0.587 * green + 0.114 * blue;
 
                 if (Math.random() * 100 <= channel1NoisePercent) {
-                    y += channel1MaximumDeviation;
+                    y += Math.random() * (channel1MaximumDeviation - channel1MinimumDeviation) + channel1MinimumDeviation;
                     y = Math.max(0, Math.min(255, y));
                 }
 
@@ -321,7 +333,7 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
                 var u = -0.147 * red - 0.289 * green + 0.436 * blue;
 
                 if (Math.random() * 100 <= channel2NoisePercent) {
-                    u += channel2MaximumDeviation;
+                    u += Math.random() * (channel2MaximumDeviation - channel2MinimumDeviation) + channel2MinimumDeviation;
                     u = Math.max(112, Math.min(-112, u));
                 }
 
@@ -333,7 +345,7 @@ public class Lab2AdditiveNoisePresenter extends Presenter<Lab2AdditiveNoiseView>
 
                 var v = 0.615 * red - 0.515 * green - 0.1 * blue;
                 if (Math.random() * 100 <= channel3NoisePercent) {
-                    v += channel3MaximumDeviation;
+                    v += Math.random() * (channel3MaximumDeviation - channel3MinimumDeviation) + channel3MinimumDeviation;
                     v = Math.max(157, Math.min(-157, v));
                 }
 

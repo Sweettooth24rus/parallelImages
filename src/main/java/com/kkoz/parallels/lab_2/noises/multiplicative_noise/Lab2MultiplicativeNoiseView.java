@@ -26,6 +26,9 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final HorizontalLayout channelsSection = new HorizontalLayout();
+    private final TextField channel1NoisePercentTextField = new TextField();
+    private final TextField channel2NoisePercentTextField = new TextField();
+    private final TextField channel3NoisePercentTextField = new TextField();
     private final TextField channel1KminTextField = new TextField();
     private final TextField channel2KminTextField = new TextField();
     private final TextField channel3KminTextField = new TextField();
@@ -38,6 +41,13 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
 
     public Lab2MultiplicativeNoiseView() {
         super(Lab2MultiplicativeNoisePresenter.class, Labs.LAB_2);
+
+        channel1NoisePercentTextField.setLabel("Процент шума");
+        channel1NoisePercentTextField.setValue("50");
+        channel2NoisePercentTextField.setLabel("Процент шума");
+        channel2NoisePercentTextField.setValue("50");
+        channel3NoisePercentTextField.setLabel("Процент шума");
+        channel3NoisePercentTextField.setValue("50");
 
         channel1KminTextField.setLabel("Kmin");
         channel1KminTextField.setValue("1");

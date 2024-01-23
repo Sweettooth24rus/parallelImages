@@ -29,6 +29,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
     private final TextField channel1NoisePercentTextField = new TextField();
     private final TextField channel2NoisePercentTextField = new TextField();
     private final TextField channel3NoisePercentTextField = new TextField();
+    private final TextField channel1MinimumDeviationTextField = new TextField();
+    private final TextField channel2MinimumDeviationTextField = new TextField();
+    private final TextField channel3MinimumDeviationTextField = new TextField();
     private final TextField channel1MaximumDeviationTextField = new TextField();
     private final TextField channel2MaximumDeviationTextField = new TextField();
     private final TextField channel3MaximumDeviationTextField = new TextField();
@@ -40,12 +43,18 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
         super(Lab2AdditiveNoisePresenter.class, Labs.LAB_2);
 
         channel1NoisePercentTextField.setLabel("Процент шума");
-        channel1NoisePercentTextField.setValue("0");
+        channel1NoisePercentTextField.setValue("50");
         channel2NoisePercentTextField.setLabel("Процент шума");
-        channel2NoisePercentTextField.setValue("0");
+        channel2NoisePercentTextField.setValue("50");
         channel3NoisePercentTextField.setLabel("Процент шума");
-        channel3NoisePercentTextField.setValue("0");
+        channel3NoisePercentTextField.setValue("50");
 
+        channel1MinimumDeviationTextField.setLabel("Минимальное отклонение");
+        channel1MinimumDeviationTextField.setValue("0");
+        channel2MinimumDeviationTextField.setLabel("Минимальное отклонение");
+        channel2MinimumDeviationTextField.setValue("0");
+        channel3MinimumDeviationTextField.setLabel("Минимальное отклонение");
+        channel3MinimumDeviationTextField.setValue("0");
         channel1MaximumDeviationTextField.setLabel("Максимальное отклонение");
         channel1MaximumDeviationTextField.setValue("0");
         channel2MaximumDeviationTextField.setLabel("Максимальное отклонение");
@@ -72,6 +81,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                 channel1NoisePercentTextField.getValue(),
                 channel2NoisePercentTextField.getValue(),
                 channel3NoisePercentTextField.getValue(),
+                channel1MinimumDeviationTextField.getValue(),
+                channel2MinimumDeviationTextField.getValue(),
+                channel3MinimumDeviationTextField.getValue(),
                 channel1MaximumDeviationTextField.getValue(),
                 channel2MaximumDeviationTextField.getValue(),
                 channel3MaximumDeviationTextField.getValue()
@@ -94,6 +106,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                     channel1NoisePercentTextField.getValue(),
                     channel2NoisePercentTextField.getValue(),
                     channel3NoisePercentTextField.getValue(),
+                    channel1MinimumDeviationTextField.getValue(),
+                    channel2MinimumDeviationTextField.getValue(),
+                    channel3MinimumDeviationTextField.getValue(),
                     channel1MaximumDeviationTextField.getValue(),
                     channel2MaximumDeviationTextField.getValue(),
                     channel3MaximumDeviationTextField.getValue()
@@ -113,16 +128,17 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                                        ChannelData secondChannel,
                                        ChannelData thirdChannel) {
         channelsSection.removeAll();
-        addToSection(channelsSection, firstChannel, "Первый канал", channel1NoisePercentTextField, channel1MaximumDeviationTextField);
-        addToSection(channelsSection, secondChannel, "Второй канал", channel2NoisePercentTextField, channel2MaximumDeviationTextField);
-        addToSection(channelsSection, thirdChannel, "Третий канал", channel3NoisePercentTextField, channel3MaximumDeviationTextField);
+        addToSection(channelsSection, firstChannel, "Первый канал", channel1NoisePercentTextField, channel1MinimumDeviationTextField, channel1MaximumDeviationTextField);
+        addToSection(channelsSection, secondChannel, "Второй канал", channel2NoisePercentTextField, channel2MinimumDeviationTextField, channel2MaximumDeviationTextField);
+        addToSection(channelsSection, thirdChannel, "Третий канал", channel3NoisePercentTextField, channel3MinimumDeviationTextField, channel3MaximumDeviationTextField);
     }
 
     private void addToSection(HorizontalLayout section,
                               ChannelData data,
                               String name,
                               TextField channelNoisePercentTextField,
-                              TextField channelImpulseProportionTextField) {
+                              TextField channelMinimumDeviationTextField,
+                              TextField channelMaximumDeviationTextField) {
         var channel = new VerticalLayout();
         channel.setWidthFull();
 
@@ -135,6 +151,9 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
                     channel1NoisePercentTextField.getValue(),
                     channel2NoisePercentTextField.getValue(),
                     channel3NoisePercentTextField.getValue(),
+                    channel1MinimumDeviationTextField.getValue(),
+                    channel2MinimumDeviationTextField.getValue(),
+                    channel3MinimumDeviationTextField.getValue(),
                     channel1MaximumDeviationTextField.getValue(),
                     channel2MaximumDeviationTextField.getValue(),
                     channel3MaximumDeviationTextField.getValue()
@@ -145,7 +164,8 @@ public class Lab2AdditiveNoiseView extends View<Lab2AdditiveNoisePresenter> {
         channel.add(
             new HorizontalLayout(
                 channelNoisePercentTextField,
-                channelImpulseProportionTextField,
+                channelMinimumDeviationTextField,
+                channelMaximumDeviationTextField,
                 submitButton
             )
         );
