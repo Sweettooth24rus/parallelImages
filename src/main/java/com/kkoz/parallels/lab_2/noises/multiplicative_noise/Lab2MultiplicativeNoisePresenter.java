@@ -20,6 +20,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
 
     public void splitImageToChannels(InputStream imageStream,
                                      SplitType type,
+                                     String channel1NoisePercentValue,
+                                     String channel2NoisePercentValue,
+                                     String channel3NoisePercentValue,
                                      String channel1KminValue,
                                      String channel2KminValue,
                                      String channel3KminValue,
@@ -27,6 +30,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
                                      String channel2KmaxValue,
                                      String channel3KmaxValue) {
         try {
+            var channel1NoisePercent = Integer.parseInt(channel1NoisePercentValue);
+            var channel2NoisePercent = Integer.parseInt(channel2NoisePercentValue);
+            var channel3NoisePercent = Integer.parseInt(channel3NoisePercentValue);
             var channel1Kmin = Integer.parseInt(channel1KminValue);
             var channel2Kmin = Integer.parseInt(channel2KminValue);
             var channel3Kmin = Integer.parseInt(channel3KminValue);
@@ -97,6 +103,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
                     var pixelData = splitImage(
                         sourceRGB,
                         type,
+                        channel1NoisePercent,
+                        channel2NoisePercent,
+                        channel3NoisePercent,
                         channel1Kmin,
                         channel2Kmin,
                         channel3Kmin,
@@ -142,6 +151,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
 
     private PixelData splitImage(RGB sourceRGB,
                                  SplitType type,
+                                 Integer channel1NoisePercent,
+                                 Integer channel2NoisePercent,
+                                 Integer channel3NoisePercent,
                                  Integer channel1Kmin,
                                  Integer channel2Kmin,
                                  Integer channel3Kmin,
@@ -161,9 +173,17 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
                 g = sourceRGB.getGreen();
                 b = sourceRGB.getBlue();
 
-                r *= Math.random() * (channel1Kmax - channel1Kmin) + channel1Kmin;
-                g *= Math.random() * (channel2Kmax - channel2Kmin) + channel2Kmin;
-                b *= Math.random() * (channel3Kmax - channel3Kmin) + channel3Kmin;
+                if (Math.random() * 100 <= channel1NoisePercent) {
+                    r *= Math.random() * (channel1Kmax - channel1Kmin) + channel1Kmin;
+                }
+
+                if (Math.random() * 100 <= channel2NoisePercent) {
+                    g *= Math.random() * (channel2Kmax - channel2Kmin) + channel2Kmin;
+                }
+
+                if (Math.random() * 100 <= channel3NoisePercent) {
+                    b *= Math.random() * (channel3Kmax - channel3Kmin) + channel3Kmin;
+                }
 
                 r = Math.max(0, Math.min(255, r));
                 g = Math.max(0, Math.min(255, g));
@@ -209,9 +229,17 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
                         hue++;
                 }
 
-                hue *= Math.random() * (channel1Kmax - channel1Kmin) + channel1Kmin;
-                saturation *= Math.random() * (channel2Kmax - channel2Kmin) + channel2Kmin;
-                cmax *= Math.random() * (channel3Kmax - channel3Kmin) + channel3Kmin;
+                if (Math.random() * 100 <= channel1NoisePercent) {
+                    hue *= Math.random() * (channel1Kmax - channel1Kmin) + channel1Kmin;
+                }
+
+                if (Math.random() * 100 <= channel2NoisePercent) {
+                    saturation *= Math.random() * (channel2Kmax - channel2Kmin) + channel2Kmin;
+                }
+
+                if (Math.random() * 100 <= channel3NoisePercent) {
+                    cmax *= Math.random() * (channel3Kmax - channel3Kmin) + channel3Kmin;
+                }
 
                 hue = Math.max(0, Math.min(0.999, hue));
                 saturation = Math.max(0, Math.min(1, saturation));
@@ -294,7 +322,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
 
                 var y = 0.299 * red + 0.587 * green + 0.114 * blue;
 
-                y *= Math.random() * (channel1Kmax - channel1Kmin) + channel1Kmin;
+                if (Math.random() * 100 <= channel1NoisePercent) {
+                    y *= Math.random() * (channel1Kmax - channel1Kmin) + channel1Kmin;
+                }
 
                 y = Math.max(0, Math.min(255, y));
 
@@ -302,7 +332,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
 
                 var u = -0.147 * red - 0.289 * green + 0.436 * blue;
 
-                u *= Math.random() * (channel2Kmax - channel2Kmin) + channel2Kmin;
+                if (Math.random() * 100 <= channel2NoisePercent) {
+                    u *= Math.random() * (channel2Kmax - channel2Kmin) + channel2Kmin;
+                }
 
                 u = Math.max(-112, Math.min(112, u));
 
@@ -314,7 +346,9 @@ public class Lab2MultiplicativeNoisePresenter extends Presenter<Lab2Multiplicati
 
                 var v = 0.615 * red - 0.515 * green - 0.1 * blue;
 
-                v *= Math.random() * (channel3Kmax - channel3Kmin) + channel3Kmin;
+                if (Math.random() * 100 <= channel3NoisePercent) {
+                    v *= Math.random() * (channel3Kmax - channel3Kmin) + channel3Kmin;
+                }
 
                 v = Math.max(-157, Math.min(157, v));
 

@@ -43,11 +43,11 @@ public class Lab2ImpulseNoiseView extends View<Lab2ImpulseNoisePresenter> {
         super(Lab2ImpulseNoisePresenter.class, Labs.LAB_2);
 
         channel1NoisePercentTextField.setLabel("Процент шума");
-        channel1NoisePercentTextField.setValue("0");
+        channel1NoisePercentTextField.setValue("50");
         channel2NoisePercentTextField.setLabel("Процент шума");
-        channel2NoisePercentTextField.setValue("0");
+        channel2NoisePercentTextField.setValue("50");
         channel3NoisePercentTextField.setLabel("Процент шума");
-        channel3NoisePercentTextField.setValue("0");
+        channel3NoisePercentTextField.setValue("50");
 
         channel1ImpulseProportionTextField.setLabel("Вероятность импульса");
         channel1ImpulseProportionTextField.setValue("50");

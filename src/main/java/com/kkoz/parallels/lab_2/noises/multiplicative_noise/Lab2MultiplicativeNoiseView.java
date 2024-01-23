@@ -79,6 +79,9 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
             presenter.splitImageToChannels(
                 buffer.getInputStream(photoFileName),
                 splitTypeComboBox.getValue(),
+                channel1NoisePercentTextField.getValue(),
+                channel2NoisePercentTextField.getValue(),
+                channel3NoisePercentTextField.getValue(),
                 channel1KminTextField.getValue(),
                 channel2KminTextField.getValue(),
                 channel3KminTextField.getValue(),
@@ -101,6 +104,9 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
                 presenter.splitImageToChannels(
                     buffer.getInputStream(photoFileName),
                     event.getValue(),
+                    channel1NoisePercentTextField.getValue(),
+                    channel2NoisePercentTextField.getValue(),
+                    channel3NoisePercentTextField.getValue(),
                     channel1KminTextField.getValue(),
                     channel2KminTextField.getValue(),
                     channel3KminTextField.getValue(),
@@ -123,16 +129,17 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
                                        ChannelData secondChannel,
                                        ChannelData thirdChannel) {
         channelsSection.removeAll();
-        addToSection(channelsSection, firstChannel, "Первый канал", channel1KminTextField, channel1KmaxTextField);
-        addToSection(channelsSection, secondChannel, "Второй канал", channel2KminTextField, channel2KmaxTextField);
-        addToSection(channelsSection, thirdChannel, "Третий канал", channel3KminTextField, channel3KmaxTextField);
+        addToSection(channelsSection, firstChannel, "Первый канал", channel1NoisePercentTextField, channel1KminTextField, channel1KmaxTextField);
+        addToSection(channelsSection, secondChannel, "Второй канал", channel2NoisePercentTextField, channel2KminTextField, channel2KmaxTextField);
+        addToSection(channelsSection, thirdChannel, "Третий канал", channel3NoisePercentTextField, channel3KminTextField, channel3KmaxTextField);
     }
 
     private void addToSection(HorizontalLayout section,
                               ChannelData data,
                               String name,
                               TextField channelNoisePercentTextField,
-                              TextField channelImpulseProportionTextField) {
+                              TextField channelKminTextField,
+                              TextField channelKmaxTextField) {
         var channel = new VerticalLayout();
         channel.setWidthFull();
 
@@ -142,6 +149,9 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
                 presenter.splitImageToChannels(
                     buffer.getInputStream(photoFileName),
                     splitTypeComboBox.getValue(),
+                    channel1NoisePercentTextField.getValue(),
+                    channel2NoisePercentTextField.getValue(),
+                    channel3NoisePercentTextField.getValue(),
                     channel1KminTextField.getValue(),
                     channel2KminTextField.getValue(),
                     channel3KminTextField.getValue(),
@@ -155,7 +165,8 @@ public class Lab2MultiplicativeNoiseView extends View<Lab2MultiplicativeNoisePre
         channel.add(
             new HorizontalLayout(
                 channelNoisePercentTextField,
-                channelImpulseProportionTextField,
+                channelKminTextField,
+                channelKmaxTextField,
                 submitButton
             )
         );
