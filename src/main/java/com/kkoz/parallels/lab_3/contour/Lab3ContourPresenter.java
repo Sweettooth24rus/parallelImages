@@ -28,6 +28,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                         String gainValue,
                         List<List<String>> sobelCoefficientsXValues,
                         List<List<String>> sobelCoefficientsYValues,
+                        List<List<String>> laplasCoefficientsValues,
                         String threadsCountValue) {
         try {
             var threads = Integer.parseInt(threadsCountValue);
@@ -43,6 +44,15 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                 for (var j = 0; j < 3; j++) {
                     sobelCoefficientsX[i][j] = Integer.parseInt(sobelCoefficientsXValues.get(i).get(j));
                     sobelCoefficientsY[i][j] = Integer.parseInt(sobelCoefficientsYValues.get(i).get(j));
+                }
+            }
+
+            var laplasCoefficients = new int[laplasCoefficientsValues.get(0).size()][laplasCoefficientsValues.size()];
+
+            for (var i = 0; i < laplasCoefficientsValues.get(0).size(); i++) {
+                laplasCoefficients[i] = new int[laplasCoefficientsValues.size()];
+                for (var j = 0; j < laplasCoefficientsValues.size(); j++) {
+                    laplasCoefficients[i][j] = Integer.parseInt(laplasCoefficientsValues.get(i).get(j));
                 }
             }
 
@@ -123,6 +133,27 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                                     gain,
                                     sobelCoefficientsX,
                                     sobelCoefficientsY,
+                                    height,
+                                    width,
+                                    start,
+                                    end
+                                )
+                            )
+                        );
+                    }
+                    case LAPLAS -> {
+                        tasks.add(
+                            executor.submit(
+                                () -> computeLaplas(
+                                    redMatrix,
+                                    greenMatrix,
+                                    blueMatrix,
+                                    newRedMatrix,
+                                    newGreenMatrix,
+                                    newBlueMatrix,
+                                    threshold,
+                                    gain,
+                                    laplasCoefficients,
                                     height,
                                     width,
                                     start,
@@ -261,6 +292,58 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                 newRedMatrix[x][y] = (int) newValue;
                 newGreenMatrix[x][y] = (int) newValue;
                 newBlueMatrix[x][y] = (int) newValue;
+            }
+        }
+        return null;
+    }
+
+    private Void computeLaplas(int[][] redMatrix,
+                               int[][] greenMatrix,
+                               int[][] blueMatrix,
+                               int[][] newRedMatrix,
+                               int[][] newGreenMatrix,
+                               int[][] newBlueMatrix,
+                               double threshold,
+                               double gain,
+                               int[][] laplasCoefficients,
+                               int height,
+                               int width,
+                               int width0,
+                               int width1) {
+        var laplasWidth = laplasCoefficients.length;
+        var laplasHeight = laplasCoefficients[0].length;
+
+        var laplasWidthOffset = laplasWidth / 2;
+        var laplasHeightOffset = laplasHeight / 2;
+
+        for (int x = width0; x < width1; x++) {
+            for (var y = 0; y < height; y++) {
+                var newValueRed = 0;
+                var newValueGreen = 0;
+                var newValueBlue = 0;
+
+                for (int i = 0; i < laplasWidth; i++) {
+                    for (int j = 0; j < laplasHeight; j++) {
+                        var newX = Math.min(Math.max(x + i - laplasWidthOffset, 0), width - 1);
+                        var newY = Math.min(Math.max(y + j - laplasHeightOffset, 0), height - 1);
+
+                        newValueRed += (redMatrix[newX][newY] * laplasCoefficients[i][j]);
+                        newValueGreen += (greenMatrix[newX][newY] * laplasCoefficients[i][j]);
+                        newValueBlue += (blueMatrix[newX][newY] * laplasCoefficients[i][j]);
+                    }
+                }
+
+                var newValue = (newValueRed + newValueGreen + newValueBlue) / 3;
+
+                newValue *= gain;
+
+                if (newValue < threshold) {
+                    newValue = 0;
+                }
+
+                newRedMatrix[x][y] = newValue;
+                newGreenMatrix[x][y] = newValue;
+                newBlueMatrix[x][y] = newValue;
             }
         }
         return null;

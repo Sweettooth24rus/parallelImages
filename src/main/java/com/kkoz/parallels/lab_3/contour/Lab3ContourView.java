@@ -36,6 +36,11 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
     private final HorizontalLayout sobelCoefficientsSection = new HorizontalLayout();
     private final List<List<TextField>> sobelCoefficientsX = new ArrayList<>();
     private final List<List<TextField>> sobelCoefficientsY = new ArrayList<>();
+    private final HorizontalLayout laplasCoefficientsSection = new HorizontalLayout();
+    private final VerticalLayout laplasMatrixSection = new VerticalLayout();
+    private final TextField laplasWidthTextField = new TextField();
+    private final TextField laplasHeightTextField = new TextField();
+    private final List<List<TextField>> laplasCoefficients = new ArrayList<>();
 
     private String photoFileName;
 
@@ -51,6 +56,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
             createContourTypeComboBoxSection(),
             createContourParametersSection(),
             createSobelCoefficientsSection(),
+            createLaplasCoefficientsSection(),
             createResultSection(null, null, null, null, null)
         );
     }
@@ -69,6 +75,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                 gainTextField.getValue(),
                 sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                 sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                 threadsCountField.getValue()
             );
         });
@@ -79,7 +86,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
     private ComboBox<ContourType> createContourTypeComboBoxSection() {
         contourTypeComboBox.setItems(ContourType.values());
 //        contourTypeComboBox.setValue(ContourType.ROBERTS);
-        contourTypeComboBox.setValue(ContourType.SOBEL);
+        contourTypeComboBox.setValue(ContourType.LAPLAS);
         contourTypeComboBox.setItemLabelGenerator(ContourType::getName);
         contourTypeComboBox.addValueChangeListener(event -> {
             if (StringUtils.isNotBlank(photoFileName)) {
@@ -90,10 +97,12 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 );
             }
             sobelCoefficientsSection.setVisible(event.getValue() == ContourType.SOBEL);
+            laplasCoefficientsSection.setVisible(event.getValue() == ContourType.LAPLAS);
         });
         return contourTypeComboBox;
     }
@@ -116,6 +125,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )
             )
@@ -194,12 +204,156 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )
             )
         );
-//        sobelCoefficientsSection.setVisible(false);
+        sobelCoefficientsSection.setVisible(false);
         return sobelCoefficientsSection;
+    }
+
+    private Component createLaplasCoefficientsSection() {
+        laplasWidthTextField.setLabel("Ширина");
+        laplasWidthTextField.setValue("3");
+        laplasWidthTextField.addValueChangeListener(e -> {
+            if (e.isFromClient()) {
+                updateLaplasMatrixSection(false);
+            }
+        });
+
+        laplasHeightTextField.setLabel("Высота");
+        laplasHeightTextField.setValue("3");
+        laplasHeightTextField.addValueChangeListener(e -> {
+            if (e.isFromClient()) {
+                updateLaplasMatrixSection(false);
+            }
+        });
+
+        laplasCoefficients.addAll(
+            List.of(
+                List.of(
+                    new TextField("", "0", ""),
+                    new TextField("", "-1", ""),
+                    new TextField("", "0", "")
+                ),
+                List.of(
+                    new TextField("", "-1", ""),
+                    new TextField("", "4", ""),
+                    new TextField("", "-1", "")
+                ),
+                List.of(
+                    new TextField("", "0", ""),
+                    new TextField("", "-1", ""),
+                    new TextField("", "0", "")
+                )
+            )
+        );
+
+        for (var laplasRow : laplasCoefficients) {
+            var matrixRow = new HorizontalLayout();
+            for (var laplasCell : laplasRow) {
+                matrixRow.add(laplasCell);
+            }
+            laplasMatrixSection.add(matrixRow);
+        }
+
+        laplasCoefficientsSection.add(
+            laplasWidthTextField,
+            laplasHeightTextField,
+            laplasMatrixSection,
+            new Button(
+                "Применить",
+                e -> presenter.contour(
+                    buffer.getInputStream(photoFileName),
+                    contourTypeComboBox.getValue(),
+                    thresholdTextField.getValue(),
+                    gainTextField.getValue(),
+                    sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    threadsCountField.getValue()
+                )
+            ),
+            new Button(
+                "Для положительного ядра",
+                e -> {
+                    laplasCoefficients.clear();
+                    laplasCoefficients.addAll(
+                        List.of(
+                            List.of(
+                                new TextField("", "0", ""),
+                                new TextField("", "-1", ""),
+                                new TextField("", "0", "")
+                            ),
+                            List.of(
+                                new TextField("", "-1", ""),
+                                new TextField("", "4", ""),
+                                new TextField("", "-1", "")
+                            ),
+                            List.of(
+                                new TextField("", "0", ""),
+                                new TextField("", "-1", ""),
+                                new TextField("", "0", "")
+                            )
+                        )
+                    );
+                    updateLaplasMatrixSection(true);
+                }
+            ),
+            new Button(
+                "Для отрицательного ядра",
+                e -> {
+                    laplasCoefficients.clear();
+                    laplasCoefficients.addAll(
+                        List.of(
+                            List.of(
+                                new TextField("", "0", ""),
+                                new TextField("", "1", ""),
+                                new TextField("", "0", "")
+                            ),
+                            List.of(
+                                new TextField("", "1", ""),
+                                new TextField("", "-4", ""),
+                                new TextField("", "1", "")
+                            ),
+                            List.of(
+                                new TextField("", "0", ""),
+                                new TextField("", "1", ""),
+                                new TextField("", "0", "")
+                            )
+                        )
+                    );
+                    updateLaplasMatrixSection(true);
+                }
+            )
+        );
+//        laplasCoefficientsSection.setVisible(false);
+        return laplasCoefficientsSection;
+    }
+
+    private void updateLaplasMatrixSection(boolean preset) {
+        if (preset) {
+            laplasWidthTextField.setValue("3");
+            laplasHeightTextField.setValue("3");
+        } else {
+            laplasCoefficients.clear();
+            for (var i = 0; i < Integer.parseInt(laplasHeightTextField.getValue()); i++) {
+                laplasCoefficients.add(new ArrayList<>());
+                for (var j = 0; j < Integer.parseInt(laplasWidthTextField.getValue()); j++) {
+                    laplasCoefficients.get(i).add(new TextField("", "0", ""));
+                }
+            }
+        }
+
+        laplasMatrixSection.removeAll();
+        for (var laplasRow : laplasCoefficients) {
+            var matrixRow = new HorizontalLayout();
+            for (var laplasCell : laplasRow) {
+                matrixRow.add(laplasCell);
+            }
+            laplasMatrixSection.add(matrixRow);
+        }
     }
 
     private void addPhotoToSection(HasComponents section, InputStream imageStream, String name) {
@@ -225,6 +379,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
 //                    gainTextField.getValue(),
 //        sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
 //            sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+//        laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
 //                    threadsCountField.getValue()
 //                )
 //            ),
@@ -237,6 +392,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
 //                    gainTextField.getValue(),
 //        sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
 //            sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+//        laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
 //                    threadsCountField.getValue()
 //                )
 //            )
