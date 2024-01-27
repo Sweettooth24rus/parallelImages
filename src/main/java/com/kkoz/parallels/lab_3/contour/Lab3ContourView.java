@@ -10,6 +10,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
@@ -19,6 +20,8 @@ import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Route("/labs/3/contour")
 @RouteAlias("/labs/3")
@@ -30,6 +33,9 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
     private final TextField thresholdTextField = new TextField();
     private final TextField gainTextField = new TextField();
     private final HorizontalLayout resultSection = new HorizontalLayout();
+    private final HorizontalLayout sobelCoefficientsSection = new HorizontalLayout();
+    private final List<List<TextField>> sobelCoefficientsX = new ArrayList<>();
+    private final List<List<TextField>> sobelCoefficientsY = new ArrayList<>();
 
     private String photoFileName;
 
@@ -44,6 +50,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
             imageSection,
             createContourTypeComboBoxSection(),
             createContourParametersSection(),
+            createSobelCoefficientsSection(),
             createResultSection(null, null, null, null, null)
         );
     }
@@ -60,6 +67,8 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                 contourTypeComboBox.getValue(),
                 thresholdTextField.getValue(),
                 gainTextField.getValue(),
+                sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                 threadsCountField.getValue()
             );
         });
@@ -69,7 +78,8 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
 
     private ComboBox<ContourType> createContourTypeComboBoxSection() {
         contourTypeComboBox.setItems(ContourType.values());
-        contourTypeComboBox.setValue(ContourType.ROBERTS);
+//        contourTypeComboBox.setValue(ContourType.ROBERTS);
+        contourTypeComboBox.setValue(ContourType.SOBEL);
         contourTypeComboBox.setItemLabelGenerator(ContourType::getName);
         contourTypeComboBox.addValueChangeListener(event -> {
             if (StringUtils.isNotBlank(photoFileName)) {
@@ -78,9 +88,12 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     event.getValue(),
                     thresholdTextField.getValue(),
                     gainTextField.getValue(),
+                    sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 );
             }
+            sobelCoefficientsSection.setVisible(event.getValue() == ContourType.SOBEL);
         });
         return contourTypeComboBox;
     }
@@ -101,11 +114,92 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     contourTypeComboBox.getValue(),
                     thresholdTextField.getValue(),
                     gainTextField.getValue(),
+                    sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )
             )
         );
         return result;
+    }
+
+    private Component createSobelCoefficientsSection() {
+        sobelCoefficientsX.addAll(
+            List.of(
+                List.of(
+                    new TextField("", "1", ""),
+                    new TextField("", "0", ""),
+                    new TextField("", "-1", "")
+                ),
+                List.of(
+                    new TextField("", "2", ""),
+                    new TextField("", "0", ""),
+                    new TextField("", "-2", "")
+                ),
+                List.of(
+                    new TextField("", "1", ""),
+                    new TextField("", "0", ""),
+                    new TextField("", "-1", "")
+                )
+            )
+        );
+
+        var matrixSectionX = new VerticalLayout();
+        for (var sobelRow : sobelCoefficientsX) {
+            var matrixRow = new HorizontalLayout();
+            for (var sobelCell : sobelRow) {
+                matrixRow.add(sobelCell);
+            }
+            matrixSectionX.add(matrixRow);
+        }
+
+        sobelCoefficientsY.addAll(
+            List.of(
+                List.of(
+                    new TextField("", "2", ""),
+                    new TextField("", "1", ""),
+                    new TextField("", "0", "")
+                ),
+                List.of(
+                    new TextField("", "1", ""),
+                    new TextField("", "0", ""),
+                    new TextField("", "-1", "")
+                ),
+                List.of(
+                    new TextField("", "0", ""),
+                    new TextField("", "-1", ""),
+                    new TextField("", "-2", "")
+                )
+            )
+        );
+
+        var matrixSectionY = new VerticalLayout();
+        for (var sobelRow : sobelCoefficientsY) {
+            var matrixRow = new HorizontalLayout();
+            for (var sobelCell : sobelRow) {
+                matrixRow.add(sobelCell);
+            }
+            matrixSectionY.add(matrixRow);
+        }
+
+        sobelCoefficientsSection.add(
+            matrixSectionX,
+            matrixSectionY,
+            new Button(
+                "Применить",
+                e -> presenter.contour(
+                    buffer.getInputStream(photoFileName),
+                    contourTypeComboBox.getValue(),
+                    thresholdTextField.getValue(),
+                    gainTextField.getValue(),
+                    sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    threadsCountField.getValue()
+                )
+            )
+        );
+//        sobelCoefficientsSection.setVisible(false);
+        return sobelCoefficientsSection;
     }
 
     private void addPhotoToSection(HasComponents section, InputStream imageStream, String name) {
@@ -129,6 +223,8 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
 //                    contourTypeComboBox.getValue(),
 //                    thresholdTextField.getValue(),
 //                    gainTextField.getValue(),
+//        sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+//            sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
 //                    threadsCountField.getValue()
 //                )
 //            ),
@@ -139,6 +235,8 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
 //                    contourTypeComboBox.getValue(),
 //                    thresholdTextField.getValue(),
 //                    gainTextField.getValue(),
+//        sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+//            sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
 //                    threadsCountField.getValue()
 //                )
 //            )

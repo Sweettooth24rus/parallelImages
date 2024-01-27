@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -25,11 +26,25 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                         ContourType type,
                         String thresholdValue,
                         String gainValue,
+                        List<List<String>> sobelCoefficientsXValues,
+                        List<List<String>> sobelCoefficientsYValues,
                         String threadsCountValue) {
         try {
             var threads = Integer.parseInt(threadsCountValue);
             var threshold = Double.parseDouble(thresholdValue);
             var gain = Double.parseDouble(gainValue);
+
+            var sobelCoefficientsX = new int[3][3];
+            var sobelCoefficientsY = new int[3][3];
+
+            for (var i = 0; i < 3; i++) {
+                sobelCoefficientsX[i] = new int[3];
+                sobelCoefficientsY[i] = new int[3];
+                for (var j = 0; j < 3; j++) {
+                    sobelCoefficientsX[i][j] = Integer.parseInt(sobelCoefficientsXValues.get(i).get(j));
+                    sobelCoefficientsY[i][j] = Integer.parseInt(sobelCoefficientsYValues.get(i).get(j));
+                }
+            }
 
             var bufferedImage = ImageIO.read(imageStream);
 
@@ -94,6 +109,28 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                             )
                         );
                     }
+                    case SOBEL -> {
+                        tasks.add(
+                            executor.submit(
+                                () -> computeSobel(
+                                    redMatrix,
+                                    greenMatrix,
+                                    blueMatrix,
+                                    newRedMatrix,
+                                    newGreenMatrix,
+                                    newBlueMatrix,
+                                    threshold,
+                                    gain,
+                                    sobelCoefficientsX,
+                                    sobelCoefficientsY,
+                                    height,
+                                    width,
+                                    start,
+                                    end
+                                )
+                            )
+                        );
+                    }
                 }
             }
 
@@ -149,6 +186,65 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                 var newValueRedY = redMatrix[minX][y] - redMatrix[x][minY];
                 var newValueGreenY = greenMatrix[minX][y] - greenMatrix[x][minY];
                 var newValueBlueY = blueMatrix[minX][y] - blueMatrix[x][minY];
+
+                var newValueRed = Math.sqrt(Math.pow(newValueRedX, 2) + Math.pow(newValueRedY, 2));
+                var newValueGreen = Math.sqrt(Math.pow(newValueGreenX, 2) + Math.pow(newValueGreenY, 2));
+                var newValueBlue = Math.sqrt(Math.pow(newValueBlueX, 2) + Math.pow(newValueBlueY, 2));
+
+                var newValue = (newValueRed + newValueGreen + newValueBlue) / 3;
+
+                newValue *= gain;
+
+                if (newValue < threshold) {
+                    newValue = 0;
+                }
+
+                newRedMatrix[x][y] = (int) newValue;
+                newGreenMatrix[x][y] = (int) newValue;
+                newBlueMatrix[x][y] = (int) newValue;
+            }
+        }
+        return null;
+    }
+
+    private Void computeSobel(int[][] redMatrix,
+                              int[][] greenMatrix,
+                              int[][] blueMatrix,
+                              int[][] newRedMatrix,
+                              int[][] newGreenMatrix,
+                              int[][] newBlueMatrix,
+                              double threshold,
+                              double gain,
+                              int[][] sobelCoefficientsX,
+                              int[][] sobelCoefficientsY,
+                              int height,
+                              int width,
+                              int width0,
+                              int width1) {
+        for (int x = width0; x < width1; x++) {
+            for (var y = 0; y < height; y++) {
+                var newValueRedX = 0;
+                var newValueGreenX = 0;
+                var newValueBlueX = 0;
+
+                var newValueRedY = 0;
+                var newValueGreenY = 0;
+                var newValueBlueY = 0;
+
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        var newX = Math.min(Math.max(x + i - 1, 0), width - 1);
+                        var newY = Math.min(Math.max(y + j - 1, 0), height - 1);
+
+                        newValueRedX += (redMatrix[newX][newY] * sobelCoefficientsX[i][j]);
+                        newValueGreenX += (greenMatrix[newX][newY] * sobelCoefficientsX[i][j]);
+                        newValueBlueX += (blueMatrix[newX][newY] * sobelCoefficientsX[i][j]);
+
+                        newValueRedY += (redMatrix[newX][newY] * sobelCoefficientsY[i][j]);
+                        newValueGreenY += (greenMatrix[newX][newY] * sobelCoefficientsY[i][j]);
+                        newValueBlueY += (blueMatrix[newX][newY] * sobelCoefficientsY[i][j]);
+                    }
+                }
 
                 var newValueRed = Math.sqrt(Math.pow(newValueRedX, 2) + Math.pow(newValueRedY, 2));
                 var newValueGreen = Math.sqrt(Math.pow(newValueGreenX, 2) + Math.pow(newValueGreenY, 2));
