@@ -21,10 +21,11 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
         super(view);
     }
 
-    public void filter(InputStream imageStream, String threadsCountValue, String matrixSizeValue) {
+    public void filter(InputStream imageStream, String threadsCountValue, String matrixWidthValue, String matrixHeightValue) {
         try {
             var threads = Integer.parseInt(threadsCountValue);
-            var matrixSize = Integer.parseInt(matrixSizeValue);
+            var matrixWidth = Integer.parseInt(matrixWidthValue);
+            var matrixHeight = Integer.parseInt(matrixHeightValue);
 
             var bufferedImage = ImageIO.read(imageStream);
 
@@ -57,7 +58,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                 newBlueMatrix[x] = new int[height];
             }
 
-            var coefficientOffset = (matrixSize - 1) / 2;
+            var matrixWidthOffset = matrixWidth / 2;
+            var matrixHeightOffset = matrixHeight / 2;
 
             var startTime = System.currentTimeMillis();
 
@@ -77,7 +79,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                             newRedMatrix,
                             newGreenMatrix,
                             newBlueMatrix,
-                            coefficientOffset,
+                            matrixWidthOffset,
+                            matrixHeightOffset,
                             height,
                             width,
                             start,
@@ -121,42 +124,57 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                                int[][] newRedMatrix,
                                int[][] newGreenMatrix,
                                int[][] newBlueMatrix,
-                               int coefficientOffset,
+                               int matrixWidthOffset,
+                               int matrixHeightOffset,
                                int height,
                                int width,
                                int width0,
                                int width1) {
-        for (int x = width0; x < width1; x++) {
-            for (var y = 0; y < height; y++) {
-                if (y == 0) {
-                    addRecursiveZero(
-                        redMatrix,
-                        greenMatrix,
-                        blueMatrix,
-                        newRedMatrix,
-                        newGreenMatrix,
-                        newBlueMatrix,
-                        coefficientOffset,
-                        height,
-                        width,
-                        x,
-                        y
-                    );
-                } else {
-                    addRecursive(
-                        redMatrix,
-                        greenMatrix,
-                        blueMatrix,
-                        newRedMatrix,
-                        newGreenMatrix,
-                        newBlueMatrix,
-                        coefficientOffset,
-                        height,
-                        width,
-                        x,
-                        y
-                    );
+        for (int xw = width0; xw < width1; xw++) {
+            for (var yh = 0; yh < height; yh++) {
+//                if (y == 0) {
+//                    addRecursiveZero(
+//                        redMatrix,
+//                        greenMatrix,
+//                        blueMatrix,
+//                        newRedMatrix,
+//                        newGreenMatrix,
+//                        newBlueMatrix,
+//                        matrixWidthOffset,
+//                        matrixHeightOffset,
+//                        height,
+//                        width,
+//                        x,
+//                        y
+//                    );
+//                } else {
+//                    addRecursive(
+//                        redMatrix,
+//                        greenMatrix,
+//                        blueMatrix,
+//                        newRedMatrix,
+//                        newGreenMatrix,
+//                        newBlueMatrix,
+//                        matrixWidthOffset,
+//                        matrixHeightOffset,
+//                        height,
+//                        width,
+//                        x,
+//                        y
+//                    );
+//                }
+                var iter = 0;
+                for (var x = Math.max(0, xw - matrixWidthOffset); x < Math.min(width, xw + matrixWidthOffset); x++) {
+                    for (var y = Math.max(0, yh - matrixHeightOffset); y < Math.min(height, yh + matrixHeightOffset); y++) {
+                        newRedMatrix[xw][yh] += redMatrix[x][y];
+                        newGreenMatrix[xw][yh] += greenMatrix[x][y];
+                        newBlueMatrix[xw][yh] += blueMatrix[x][y];
+                        iter++;
+                    }
                 }
+                newRedMatrix[xw][yh] /= iter;
+                newGreenMatrix[xw][yh] /= iter;
+                newBlueMatrix[xw][yh] /= iter;
             }
         }
         return null;
@@ -168,15 +186,16 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                                   int[][] newRedMatrix,
                                   int[][] newGreenMatrix,
                                   int[][] newBlueMatrix,
-                                  int coefficientOffset,
+                                  int matrixWidthOffset,
+                                  int matrixHeightOffset,
                                   int height,
                                   int width,
                                   int xw,
                                   int yh
     ) {
         var iter = 0;
-        for (var x = Math.max(0, xw - coefficientOffset); x < Math.min(width, xw + coefficientOffset); x++) {
-            for (var y = Math.max(0, yh - coefficientOffset); y < Math.min(height, yh + coefficientOffset); y++) {
+        for (var x = Math.max(0, xw - matrixWidthOffset); x < Math.min(width, xw + matrixWidthOffset); x++) {
+            for (var y = Math.max(0, yh - matrixHeightOffset); y < Math.min(height, yh + matrixHeightOffset); y++) {
                 newRedMatrix[xw][yh] += redMatrix[x][y];
                 newGreenMatrix[xw][yh] += greenMatrix[x][y];
                 newBlueMatrix[xw][yh] += blueMatrix[x][y];
@@ -194,51 +213,47 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                               int[][] newRedMatrix,
                               int[][] newGreenMatrix,
                               int[][] newBlueMatrix,
-                              int coefficientOffset,
+                              int matrixWidthOffset,
+                              int matrixHeightOffset,
                               int height,
                               int width,
                               int xw,
                               int yh
     ) {
         var iter = 0;
-        var newRedValue = 0D;
-        var newGreenValue = 0D;
-        var newBlueValue = 0D;
-//        for (var x = Math.max(0, xw - coefficientOffset); x < Math.min(width, xw + coefficientOffset); x++) {
-//            newRedValue -= redMatrix[x][Math.max(0, yh - coefficientOffset)];
-//            newGreenValue -= greenMatrix[x][Math.max(0, yh - coefficientOffset)];
-//            newBlueValue -= blueMatrix[x][Math.max(0, yh - coefficientOffset)];
-//            iter++;
-//        }
-//        for (var x = Math.max(0, xw - coefficientOffset); x < Math.min(width, xw + coefficientOffset); x++) {
-//            var minY = Math.min(height - 1, yh + coefficientOffset);
-//            newRedValue += redMatrix[x][minY];
-//            newGreenValue += greenMatrix[x][minY];
-//            newBlueValue += blueMatrix[x][minY];
-//            iter++;
-//        }
+        var minusRedValue = 0D;
+        var minusGreenValue = 0D;
+        var minusBlueValue = 0D;
+        var plusRedValue = 0D;
+        var plusGreenValue = 0D;
+        var plusBlueValue = 0D;
 
-        for (var y = Math.max(0, yh - coefficientOffset); y < Math.min(height, yh); y++) {
-            newRedValue -= redMatrix[Math.max(0, xw - coefficientOffset)][y];
-            newGreenValue -= greenMatrix[Math.max(0, xw - coefficientOffset)][y];
-            newBlueValue -= blueMatrix[Math.max(0, xw - coefficientOffset)][y];
+        for (var x = Math.max(0, xw - matrixWidthOffset); x < Math.min(width, xw + matrixWidthOffset); x++) {
+            var maxY = Math.max(0, yh - matrixHeightOffset - 1);
+            minusRedValue += redMatrix[x][maxY];
+            minusGreenValue += greenMatrix[x][maxY];
+            minusBlueValue += blueMatrix[x][maxY];
             iter++;
         }
-        for (var y = Math.max(0, yh - coefficientOffset); y < Math.min(height, yh); y++) {
-            var minX = Math.min(width - 1, xw + coefficientOffset);
-            newRedValue += redMatrix[minX][y];
-            newGreenValue += greenMatrix[minX][y];
-            newBlueValue += blueMatrix[minX][y];
+        minusRedValue /= (iter * 2);
+        minusGreenValue /= (iter * 2);
+        minusBlueValue /= (iter * 2);
+        iter = 0;
+        for (var x = Math.max(0, xw - matrixWidthOffset); x < Math.min(width, xw + matrixWidthOffset); x++) {
+            var minY = Math.min(height - 1, yh + matrixHeightOffset);
+            plusRedValue += redMatrix[x][minY];
+            plusGreenValue += greenMatrix[x][minY];
+            plusBlueValue += blueMatrix[x][minY];
             iter++;
         }
 
-        newRedValue /= iter;
-        newGreenValue /= iter;
-        newBlueValue /= iter;
+        plusRedValue /= iter;
+        plusGreenValue /= iter;
+        plusBlueValue /= iter;
 
-        newRedMatrix[xw][yh] += newRedValue + redMatrix[xw][yh];
-        newGreenMatrix[xw][yh] += newGreenValue + greenMatrix[xw][yh];
-        newBlueMatrix[xw][yh] += newBlueValue + blueMatrix[xw][yh];
+        newRedMatrix[xw][yh] = (int) (newRedMatrix[xw][yh - 1] - minusRedValue + plusRedValue);
+        newGreenMatrix[xw][yh] = (int) (newGreenMatrix[xw][yh - 1] - minusGreenValue + plusGreenValue);
+        newBlueMatrix[xw][yh] = (int) (newBlueMatrix[xw][yh - 1] - minusBlueValue + plusBlueValue);
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
@@ -247,9 +262,10 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
         return new ByteArrayInputStream(byteBuffer.toByteArray());
     }
 
-    public void calculateAverage(InputStream imageStream, String matrixSizeValue) {
+    public void calculateAverage(InputStream imageStream, String matrixWidthValue, String matrixHeightValue) {
         try {
-            var matrixSize = Integer.parseInt(matrixSizeValue);
+            var matrixWidth = Integer.parseInt(matrixWidthValue);
+            var matrixHeight = Integer.parseInt(matrixHeightValue);
 
             var bufferedImage = ImageIO.read(imageStream);
 
@@ -282,7 +298,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                 newBlueMatrix[x] = new int[height];
             }
 
-            var coefficientOffset = (matrixSize - 1) / 2;
+            var matrixWidthOffset = matrixWidth / 2;
+            var matrixHeightOffset = matrixHeight / 2;
 
             var avgTime1 = 0.;
 
@@ -295,7 +312,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
                     height,
                     width
                 );
@@ -314,7 +332,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
                     height,
                     width
                 );
@@ -333,7 +352,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
                     height,
                     width
                 );
@@ -352,7 +372,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
                     height,
                     width
                 );
@@ -374,7 +395,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                                  int[][] newRedMatrix,
                                  int[][] newGreenMatrix,
                                  int[][] newBlueMatrix,
-                                 int coefficientOffset,
+                                 int matrixWidthOffset,
+                                 int matrixHeightOffset,
                                  int height,
                                  int width) throws ExecutionException, InterruptedException {
         var startTime = System.currentTimeMillis();
@@ -395,7 +417,8 @@ public class Lab2RecursiveAvgFilterPresenter extends Presenter<Lab2RecursiveAvgF
                         newRedMatrix,
                         newGreenMatrix,
                         newBlueMatrix,
-                        coefficientOffset,
+                        matrixWidthOffset,
+                        matrixHeightOffset,
                         height,
                         width,
                         start,

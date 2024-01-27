@@ -22,7 +22,8 @@ import java.io.InputStream;
 public class Lab2FastMedianFilterView extends View<Lab2FastMedianFilterPresenter> {
     private final MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     private final HorizontalLayout imageSection = new HorizontalLayout();
-    private final TextField matrixSizeTextField = new TextField();
+    private final TextField matrixWidthTextField = new TextField();
+    private final TextField matrixHeightTextField = new TextField();
     private final TextField threadsCountField = new TextField();
     private final HorizontalLayout resultSection = new HorizontalLayout();
 
@@ -58,7 +59,10 @@ public class Lab2FastMedianFilterView extends View<Lab2FastMedianFilterPresenter
         var section = new VerticalLayout();
         section.setWidthFull();
 
-        matrixSizeTextField.setValue("3");
+        matrixWidthTextField.setLabel("Ширина");
+        matrixWidthTextField.setValue("3");
+        matrixHeightTextField.setLabel("Высота");
+        matrixHeightTextField.setValue("3");
 
         var submitButton = new Button("Применить");
         submitButton.addClickListener(e -> {
@@ -66,13 +70,15 @@ public class Lab2FastMedianFilterView extends View<Lab2FastMedianFilterPresenter
                 presenter.filter(
                     buffer.getInputStream(photoFileName),
                     threadsCountField.getValue(),
-                    matrixSizeTextField.getValue()
+                    matrixWidthTextField.getValue(),
+                    matrixHeightTextField.getValue()
                 );
             }
         });
 
         section.add(
-            matrixSizeTextField,
+            matrixWidthTextField,
+            matrixHeightTextField,
             submitButton
         );
 
@@ -98,14 +104,16 @@ public class Lab2FastMedianFilterView extends View<Lab2FastMedianFilterPresenter
                 e -> presenter.filter(
                     buffer.getInputStream(photoFileName),
                     threadsCountField.getValue(),
-                    matrixSizeTextField.getValue()
+                    matrixWidthTextField.getValue(),
+                    matrixHeightTextField.getValue()
                 )
             ),
             new Button(
                 "Вычислить среднее",
                 e -> presenter.calculateAverage(
                     buffer.getInputStream(photoFileName),
-                    matrixSizeTextField.getValue()
+                    matrixWidthTextField.getValue(),
+                    matrixHeightTextField.getValue()
                 )
             )
         );

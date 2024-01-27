@@ -22,10 +22,11 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
         super(view);
     }
 
-    public void filter(InputStream imageStream, String threadsCountValue, String matrixSizeValue) {
+    public void filter(InputStream imageStream, String threadsCountValue, String matrixWidthValue, String matrixHeightValue) {
         try {
             var threads = Integer.parseInt(threadsCountValue);
-            var matrixSize = Integer.parseInt(matrixSizeValue);
+            var matrixWidth = Integer.parseInt(matrixWidthValue);
+            var matrixHeight = Integer.parseInt(matrixHeightValue);
 
             var bufferedImage = ImageIO.read(imageStream);
 
@@ -58,7 +59,8 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                 newBlueMatrix[x] = new int[height];
             }
 
-            var coefficientOffset = (matrixSize - 1) / 2;
+            var matrixWidthOffset = matrixWidth / 2;
+            var matrixHeightOffset = matrixHeight / 2;
 
             var startTime = System.currentTimeMillis();
 
@@ -78,8 +80,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                             newRedMatrix,
                             newGreenMatrix,
                             newBlueMatrix,
-                            coefficientOffset,
-                            matrixSize,
+                            matrixWidthOffset,
+                            matrixHeightOffset,
+                            matrixWidth,
+                            matrixHeight,
                             height,
                             width,
                             start,
@@ -123,32 +127,34 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                                int[][] newRedMatrix,
                                int[][] newGreenMatrix,
                                int[][] newBlueMatrix,
-                               int coefficientOffset,
-                               int coefficientSize,
+                               int matrixWidthOffset,
+                               int matrixHeightOffset,
+                               int matrixWidth,
+                               int matrixHeight,
                                int height,
                                int width,
                                int width0,
                                int width1) {
         for (int x = width0; x < width1; x++) {
             for (var y = 0; y < height; y++) {
-                var rMatrix = new int[coefficientSize * coefficientSize];
-                var gMatrix = new int[coefficientSize * coefficientSize];
-                var bMatrix = new int[coefficientSize * coefficientSize];
-                for (int i = 0; i < coefficientSize; i++) {
-                    for (int j = 0; j < coefficientSize; j++) {
-                        var newX = Math.min(Math.max(x + i - coefficientOffset, 0), width - 1);
-                        var newY = Math.min(Math.max(y + j - coefficientOffset, 0), height - 1);
-                        rMatrix[i * coefficientSize + j] = redMatrix[newX][newY];
-                        gMatrix[i * coefficientSize + j] = greenMatrix[newX][newY];
-                        bMatrix[i * coefficientSize + j] = blueMatrix[newX][newY];
+                var rMatrix = new int[matrixWidth * matrixHeight];
+                var gMatrix = new int[matrixWidth * matrixHeight];
+                var bMatrix = new int[matrixWidth * matrixHeight];
+                for (int i = 0; i < matrixWidth; i++) {
+                    for (int j = 0; j < matrixHeight; j++) {
+                        var newX = Math.min(Math.max(x + i - matrixWidthOffset, 0), width - 1);
+                        var newY = Math.min(Math.max(y + j - matrixHeightOffset, 0), height - 1);
+                        rMatrix[i * matrixHeight + j] = redMatrix[newX][newY];
+                        gMatrix[i * matrixHeight + j] = greenMatrix[newX][newY];
+                        bMatrix[i * matrixHeight + j] = blueMatrix[newX][newY];
                     }
                 }
                 Arrays.sort(rMatrix);
                 Arrays.sort(gMatrix);
                 Arrays.sort(bMatrix);
-                newRedMatrix[x][y] = rMatrix[coefficientSize * coefficientSize / 2];
-                newGreenMatrix[x][y] = gMatrix[coefficientSize * coefficientSize / 2];
-                newBlueMatrix[x][y] = bMatrix[coefficientSize * coefficientSize / 2];
+                newRedMatrix[x][y] = rMatrix[matrixWidth * matrixHeight / 2];
+                newGreenMatrix[x][y] = gMatrix[matrixWidth * matrixHeight / 2];
+                newBlueMatrix[x][y] = bMatrix[matrixWidth * matrixHeight / 2];
             }
         }
         return null;
@@ -160,9 +166,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
         return new ByteArrayInputStream(byteBuffer.toByteArray());
     }
 
-    public void calculateAverage(InputStream imageStream, String matrixSizeValue) {
+    public void calculateAverage(InputStream imageStream, String matrixWidthValue, String matrixHeightValue) {
         try {
-            var matrixSize = Integer.parseInt(matrixSizeValue);
+            var matrixWidth = Integer.parseInt(matrixWidthValue);
+            var matrixHeight = Integer.parseInt(matrixHeightValue);
 
             var bufferedImage = ImageIO.read(imageStream);
 
@@ -195,7 +202,8 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                 newBlueMatrix[x] = new int[height];
             }
 
-            var coefficientOffset = (matrixSize - 1) / 2;
+            var matrixWidthOffset = matrixWidth / 2;
+            var matrixHeightOffset = matrixHeight / 2;
 
             var avgTime1 = 0.;
 
@@ -208,8 +216,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
-                    matrixSize,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
+                    matrixWidth,
+                    matrixHeight,
                     height,
                     width
                 );
@@ -228,8 +238,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
-                    matrixSize,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
+                    matrixWidth,
+                    matrixHeight,
                     height,
                     width
                 );
@@ -248,8 +260,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
-                    matrixSize,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
+                    matrixWidth,
+                    matrixHeight,
                     height,
                     width
                 );
@@ -268,8 +282,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                     newRedMatrix,
                     newGreenMatrix,
                     newBlueMatrix,
-                    coefficientOffset,
-                    matrixSize,
+                    matrixWidthOffset,
+                    matrixHeightOffset,
+                    matrixWidth,
+                    matrixHeight,
                     height,
                     width
                 );
@@ -291,8 +307,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                                  int[][] newRedMatrix,
                                  int[][] newGreenMatrix,
                                  int[][] newBlueMatrix,
-                                 int coefficientOffset,
-                                 int matrixSize,
+                                 int matrixWidthOffset,
+                                 int matrixHeightOffset,
+                                 int matrixWidth,
+                                 int matrixHeight,
                                  int height,
                                  int width) throws ExecutionException, InterruptedException {
         var startTime = System.currentTimeMillis();
@@ -313,8 +331,10 @@ public class Lab2FastMedianFilterPresenter extends Presenter<Lab2FastMedianFilte
                         newRedMatrix,
                         newGreenMatrix,
                         newBlueMatrix,
-                        coefficientOffset,
-                        matrixSize,
+                        matrixWidthOffset,
+                        matrixHeightOffset,
+                        matrixWidth,
+                        matrixHeight,
                         height,
                         width,
                         start,
