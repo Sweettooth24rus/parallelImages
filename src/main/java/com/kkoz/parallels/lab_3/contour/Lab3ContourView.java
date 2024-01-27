@@ -85,8 +85,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
 
     private ComboBox<ContourType> createContourTypeComboBoxSection() {
         contourTypeComboBox.setItems(ContourType.values());
-//        contourTypeComboBox.setValue(ContourType.ROBERTS);
-        contourTypeComboBox.setValue(ContourType.LAPLAS);
+        contourTypeComboBox.setValue(ContourType.ROBERTS);
         contourTypeComboBox.setItemLabelGenerator(ContourType::getName);
         contourTypeComboBox.addValueChangeListener(event -> {
             if (StringUtils.isNotBlank(photoFileName)) {
@@ -328,7 +327,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                 }
             )
         );
-//        laplasCoefficientsSection.setVisible(false);
+        laplasCoefficientsSection.setVisible(false);
         return laplasCoefficientsSection;
     }
 
@@ -368,35 +367,34 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
     public Component createResultSection(Double time, Double avgTime1, Double avgTime2, Double avgTime3, Double avgTime4) {
         resultSection.removeAll();
 
-//        resultSection.add(
-//            threadsCountField,
-//            new Button(
-//                "Применить",
-//                e -> presenter.contour(
-//                    buffer.getInputStream(photoFileName),
-//                    contourTypeComboBox.getValue(),
-//                    thresholdTextField.getValue(),
-//                    gainTextField.getValue(),
-//        sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
-//            sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
-//        laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
-//                    threadsCountField.getValue()
-//                )
-//            ),
-//            new Button(
-//                "Вычислить среднее",
-//                e -> presenter.calculateAverage(
-//                    buffer.getInputStream(photoFileName),
-//                    contourTypeComboBox.getValue(),
-//                    thresholdTextField.getValue(),
-//                    gainTextField.getValue(),
-//        sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
-//            sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
-//        laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
-//                    threadsCountField.getValue()
-//                )
-//            )
-//        );
+        resultSection.add(
+            threadsCountField,
+            new Button(
+                "Применить",
+                e -> presenter.contour(
+                    buffer.getInputStream(photoFileName),
+                    contourTypeComboBox.getValue(),
+                    thresholdTextField.getValue(),
+                    gainTextField.getValue(),
+                    sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    threadsCountField.getValue()
+                )
+            ),
+            new Button(
+                "Вычислить среднее",
+                e -> presenter.calculateAverage(
+                    buffer.getInputStream(photoFileName),
+                    contourTypeComboBox.getValue(),
+                    thresholdTextField.getValue(),
+                    gainTextField.getValue(),
+                    sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList()
+                )
+            )
+        );
 
         if (time != null) {
             resultSection.add(new Span("Время выполнения: " + time + " с"));

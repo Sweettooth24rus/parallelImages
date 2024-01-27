@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -353,5 +354,271 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
         var byteBuffer = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "jpeg", byteBuffer);
         return new ByteArrayInputStream(byteBuffer.toByteArray());
+    }
+
+    public void calculateAverage(InputStream imageStream,
+                                 ContourType type,
+                                 String thresholdValue,
+                                 String gainValue,
+                                 List<List<String>> sobelCoefficientsXValues,
+                                 List<List<String>> sobelCoefficientsYValues,
+                                 List<List<String>> laplasCoefficientsValues) {
+        try {
+            var threshold = Double.parseDouble(thresholdValue);
+            var gain = Double.parseDouble(gainValue);
+
+            var sobelCoefficientsX = new int[3][3];
+            var sobelCoefficientsY = new int[3][3];
+
+            for (var i = 0; i < 3; i++) {
+                sobelCoefficientsX[i] = new int[3];
+                sobelCoefficientsY[i] = new int[3];
+                for (var j = 0; j < 3; j++) {
+                    sobelCoefficientsX[i][j] = Integer.parseInt(sobelCoefficientsXValues.get(i).get(j));
+                    sobelCoefficientsY[i][j] = Integer.parseInt(sobelCoefficientsYValues.get(i).get(j));
+                }
+            }
+
+            var laplasCoefficients = new int[laplasCoefficientsValues.get(0).size()][laplasCoefficientsValues.size()];
+
+            for (var i = 0; i < laplasCoefficientsValues.get(0).size(); i++) {
+                laplasCoefficients[i] = new int[laplasCoefficientsValues.size()];
+                for (var j = 0; j < laplasCoefficientsValues.size(); j++) {
+                    laplasCoefficients[i][j] = Integer.parseInt(laplasCoefficientsValues.get(i).get(j));
+                }
+            }
+
+            var bufferedImage = ImageIO.read(imageStream);
+
+            var width = bufferedImage.getWidth();
+            var height = bufferedImage.getHeight();
+
+            var redMatrix = new int[width][height];
+            var greenMatrix = new int[width][height];
+            var blueMatrix = new int[width][height];
+            var newRedMatrix = new int[width][height];
+            var newGreenMatrix = new int[width][height];
+            var newBlueMatrix = new int[width][height];
+
+            for (var x = 0; x < width; x++) {
+                var redHeight = new int[height];
+                var greenHeight = new int[height];
+                var blueHeight = new int[height];
+                for (var y = 0; y < height; y++) {
+                    var color = new Color(bufferedImage.getRGB(x, y));
+
+                    redHeight[y] = color.getRed();
+                    greenHeight[y] = color.getGreen();
+                    blueHeight[y] = color.getBlue();
+                }
+                redMatrix[x] = redHeight;
+                greenMatrix[x] = greenHeight;
+                blueMatrix[x] = blueHeight;
+                newRedMatrix[x] = new int[height];
+                newGreenMatrix[x] = new int[height];
+                newBlueMatrix[x] = new int[height];
+            }
+
+            var avgTime1 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime1 += startParallel(
+                    1,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    newRedMatrix,
+                    newGreenMatrix,
+                    newBlueMatrix,
+                    type,
+                    threshold,
+                    gain,
+                    sobelCoefficientsX,
+                    sobelCoefficientsY,
+                    laplasCoefficients,
+                    height,
+                    width
+                );
+            }
+
+            avgTime1 /= 10;
+
+            var avgTime2 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime2 += startParallel(
+                    2,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    newRedMatrix,
+                    newGreenMatrix,
+                    newBlueMatrix,
+                    type,
+                    threshold,
+                    gain,
+                    sobelCoefficientsX,
+                    sobelCoefficientsY,
+                    laplasCoefficients,
+                    height,
+                    width
+                );
+            }
+
+            avgTime2 /= 10;
+
+            var avgTime3 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime3 += startParallel(
+                    3,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    newRedMatrix,
+                    newGreenMatrix,
+                    newBlueMatrix,
+                    type,
+                    threshold,
+                    gain,
+                    sobelCoefficientsX,
+                    sobelCoefficientsY,
+                    laplasCoefficients,
+                    height,
+                    width
+                );
+            }
+
+            avgTime3 /= 10;
+
+            var avgTime4 = 0.;
+
+            for (var i = 0; i < 10; i++) {
+                avgTime4 += startParallel(
+                    4,
+                    redMatrix,
+                    greenMatrix,
+                    blueMatrix,
+                    newRedMatrix,
+                    newGreenMatrix,
+                    newBlueMatrix,
+                    type,
+                    threshold,
+                    gain,
+                    sobelCoefficientsX,
+                    sobelCoefficientsY,
+                    laplasCoefficients,
+                    height,
+                    width
+                );
+            }
+
+            avgTime4 /= 10;
+
+            view.createResultSection(null, avgTime1, avgTime2, avgTime3, avgTime4);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private double startParallel(Integer threads,
+                                 int[][] redMatrix,
+                                 int[][] greenMatrix,
+                                 int[][] blueMatrix,
+                                 int[][] newRedMatrix,
+                                 int[][] newGreenMatrix,
+                                 int[][] newBlueMatrix,
+                                 ContourType type,
+                                 double threshold,
+                                 double gain,
+                                 int[][] sobelCoefficientsX,
+                                 int[][] sobelCoefficientsY,
+                                 int[][] laplasCoefficients,
+                                 int height,
+                                 int width) throws ExecutionException, InterruptedException {
+        var startTime = System.currentTimeMillis();
+
+        var executor = Executors.newFixedThreadPool(threads);
+
+        var tasks = new ArrayList<Future<Void>>();
+
+        for (var i = 0; i < threads; i++) {
+            var start = (width / threads) * i;
+            var end = (width / threads) * (i + 1);
+            switch (type) {
+                case ROBERTS -> {
+                    tasks.add(
+                        executor.submit(
+                            () -> computeRoberts(
+                                redMatrix,
+                                greenMatrix,
+                                blueMatrix,
+                                newRedMatrix,
+                                newGreenMatrix,
+                                newBlueMatrix,
+                                threshold,
+                                gain,
+                                height,
+                                width,
+                                start,
+                                end
+                            )
+                        )
+                    );
+                }
+                case SOBEL -> {
+                    tasks.add(
+                        executor.submit(
+                            () -> computeSobel(
+                                redMatrix,
+                                greenMatrix,
+                                blueMatrix,
+                                newRedMatrix,
+                                newGreenMatrix,
+                                newBlueMatrix,
+                                threshold,
+                                gain,
+                                sobelCoefficientsX,
+                                sobelCoefficientsY,
+                                height,
+                                width,
+                                start,
+                                end
+                            )
+                        )
+                    );
+                }
+                case LAPLAS -> {
+                    tasks.add(
+                        executor.submit(
+                            () -> computeLaplas(
+                                redMatrix,
+                                greenMatrix,
+                                blueMatrix,
+                                newRedMatrix,
+                                newGreenMatrix,
+                                newBlueMatrix,
+                                threshold,
+                                gain,
+                                laplasCoefficients,
+                                height,
+                                width,
+                                start,
+                                end
+                            )
+                        )
+                    );
+                }
+            }
+        }
+
+        for (var task : tasks) {
+            task.get();
+        }
+
+        executor.shutdown();
+
+        return (System.currentTimeMillis() - startTime) / 1000.0;
     }
 }
