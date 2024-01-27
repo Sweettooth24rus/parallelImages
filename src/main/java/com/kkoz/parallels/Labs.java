@@ -44,7 +44,9 @@ public enum Labs {
             case LAB_3 -> {
                 start += "3/";
                 return List.of(
-                    Pair.of("Контурное представление", start + "contour")
+                    Pair.of("Контурное представление", start + "contour"),
+                    Pair.of("Бинаризация", start + "binarisation"),
+                    Pair.of("Сегментация", start + "segmentation")
                 );
             }
             default -> {
