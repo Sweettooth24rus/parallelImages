@@ -46,7 +46,8 @@ public enum Labs {
                 return List.of(
                     Pair.of("Контурное представление", start + "contour"),
                     Pair.of("Бинаризация", start + "binarisation"),
-                    Pair.of("Сегментация", start + "segmentation")
+                    Pair.of("Сегментация (квадродерево)", start + "quatro_tree"),
+                    Pair.of("Сегментация (водораздел)", start + "watershed")
                 );
             }
             default -> {
