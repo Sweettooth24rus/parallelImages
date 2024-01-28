@@ -62,32 +62,20 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             var width = bufferedImage.getWidth();
             var height = bufferedImage.getHeight();
 
-            var redMatrix = new int[width][height];
-            var greenMatrix = new int[width][height];
-            var blueMatrix = new int[width][height];
-            var newRedMatrix = new int[width][height];
-            var newGreenMatrix = new int[width][height];
-            var newBlueMatrix = new int[width][height];
+            var oldMatrix = new int[width][height];
+            var newMatrix = new int[width][height];
 
             for (var x = 0; x < width; x++) {
-                var redHeight = new int[height];
-                var greenHeight = new int[height];
-                var blueHeight = new int[height];
+                var oldHeight = new int[height];
 
                 for (var y = 0; y < height; y++) {
                     var rgb = bufferedImage.getRGB(x, y);
                     var color = new Color(rgb);
 
-                    redHeight[y] = color.getRed();
-                    greenHeight[y] = color.getGreen();
-                    blueHeight[y] = color.getBlue();
+                    oldHeight[y] = (int) (0.2125 * color.getRed() + 0.7154 * color.getGreen() + 0.0721 * color.getBlue());
                 }
-                redMatrix[x] = redHeight;
-                greenMatrix[x] = greenHeight;
-                blueMatrix[x] = blueHeight;
-                newRedMatrix[x] = new int[height];
-                newGreenMatrix[x] = new int[height];
-                newBlueMatrix[x] = new int[height];
+                oldMatrix[x] = oldHeight;
+                newMatrix[x] = new int[height];
             }
 
             var startTime = System.currentTimeMillis();
@@ -104,12 +92,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                         tasks.add(
                             executor.submit(
                                 () -> computeRoberts(
-                                    redMatrix,
-                                    greenMatrix,
-                                    blueMatrix,
-                                    newRedMatrix,
-                                    newGreenMatrix,
-                                    newBlueMatrix,
+                                    oldMatrix,
+                                    newMatrix,
                                     threshold,
                                     gain,
                                     height,
@@ -124,12 +108,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                         tasks.add(
                             executor.submit(
                                 () -> computeSobel(
-                                    redMatrix,
-                                    greenMatrix,
-                                    blueMatrix,
-                                    newRedMatrix,
-                                    newGreenMatrix,
-                                    newBlueMatrix,
+                                    oldMatrix,
+                                    newMatrix,
                                     threshold,
                                     gain,
                                     sobelCoefficientsX,
@@ -146,12 +126,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                         tasks.add(
                             executor.submit(
                                 () -> computeLaplas(
-                                    redMatrix,
-                                    greenMatrix,
-                                    blueMatrix,
-                                    newRedMatrix,
-                                    newGreenMatrix,
-                                    newBlueMatrix,
+                                    oldMatrix,
+                                    newMatrix,
                                     threshold,
                                     gain,
                                     laplasCoefficients,
@@ -177,9 +153,9 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             for (var x = 0; x < width; x++) {
                 for (var y = 0; y < height; y++) {
                     var color = new Color(
-                        RGB.checkBorderValues(newRedMatrix[x][y]),
-                        RGB.checkBorderValues(newGreenMatrix[x][y]),
-                        RGB.checkBorderValues(newBlueMatrix[x][y])
+                        RGB.checkBorderValues(newMatrix[x][y]),
+                        RGB.checkBorderValues(newMatrix[x][y]),
+                        RGB.checkBorderValues(newMatrix[x][y])
                     );
 
                     bufferedImage.setRGB(x, y, color.getRGB());
@@ -194,12 +170,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
         }
     }
 
-    private Void computeRoberts(int[][] redMatrix,
-                                int[][] greenMatrix,
-                                int[][] blueMatrix,
-                                int[][] newRedMatrix,
-                                int[][] newGreenMatrix,
-                                int[][] newBlueMatrix,
+    private Void computeRoberts(int[][] oldMatrix,
+                                int[][] newMatrix,
                                 double threshold,
                                 double gain,
                                 int height,
@@ -211,19 +183,11 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                 var minX = Math.min(x + 1, width - 1);
                 var minY = Math.min(y + 1, height - 1);
 
-                var newValueRedX = redMatrix[x][y] - redMatrix[minX][minY];
-                var newValueGreenX = greenMatrix[x][y] - greenMatrix[minX][minY];
-                var newValueBlueX = blueMatrix[x][y] - blueMatrix[minX][minY];
+                var newValueX = oldMatrix[x][y] - oldMatrix[minX][minY];
 
-                var newValueRedY = redMatrix[minX][y] - redMatrix[x][minY];
-                var newValueGreenY = greenMatrix[minX][y] - greenMatrix[x][minY];
-                var newValueBlueY = blueMatrix[minX][y] - blueMatrix[x][minY];
+                var newValueY = oldMatrix[minX][y] - oldMatrix[x][minY];
 
-                var newValueRed = Math.sqrt(Math.pow(newValueRedX, 2) + Math.pow(newValueRedY, 2));
-                var newValueGreen = Math.sqrt(Math.pow(newValueGreenX, 2) + Math.pow(newValueGreenY, 2));
-                var newValueBlue = Math.sqrt(Math.pow(newValueBlueX, 2) + Math.pow(newValueBlueY, 2));
-
-                var newValue = (newValueRed + newValueGreen + newValueBlue) / 3;
+                var newValue = Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2));
 
                 newValue *= gain;
 
@@ -231,20 +195,14 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     newValue = 0;
                 }
 
-                newRedMatrix[x][y] = (int) newValue;
-                newGreenMatrix[x][y] = (int) newValue;
-                newBlueMatrix[x][y] = (int) newValue;
+                newMatrix[x][y] = (int) newValue;
             }
         }
         return null;
     }
 
-    private Void computeSobel(int[][] redMatrix,
-                              int[][] greenMatrix,
-                              int[][] blueMatrix,
-                              int[][] newRedMatrix,
-                              int[][] newGreenMatrix,
-                              int[][] newBlueMatrix,
+    private Void computeSobel(int[][] oldMatrix,
+                              int[][] newMatrix,
                               double threshold,
                               double gain,
                               int[][] sobelCoefficientsX,
@@ -255,34 +213,20 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                               int width1) {
         for (int x = width0; x < width1; x++) {
             for (var y = 0; y < height; y++) {
-                var newValueRedX = 0;
-                var newValueGreenX = 0;
-                var newValueBlueX = 0;
-
-                var newValueRedY = 0;
-                var newValueGreenY = 0;
-                var newValueBlueY = 0;
+                var newValueX = 0;
+                var newValueY = 0;
 
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
                         var newX = Math.min(Math.max(x + i - 1, 0), width - 1);
                         var newY = Math.min(Math.max(y + j - 1, 0), height - 1);
 
-                        newValueRedX += (redMatrix[newX][newY] * sobelCoefficientsX[i][j]);
-                        newValueGreenX += (greenMatrix[newX][newY] * sobelCoefficientsX[i][j]);
-                        newValueBlueX += (blueMatrix[newX][newY] * sobelCoefficientsX[i][j]);
-
-                        newValueRedY += (redMatrix[newX][newY] * sobelCoefficientsY[i][j]);
-                        newValueGreenY += (greenMatrix[newX][newY] * sobelCoefficientsY[i][j]);
-                        newValueBlueY += (blueMatrix[newX][newY] * sobelCoefficientsY[i][j]);
+                        newValueX += (oldMatrix[newX][newY] * sobelCoefficientsX[i][j]);
+                        newValueY += (oldMatrix[newX][newY] * sobelCoefficientsY[i][j]);
                     }
                 }
 
-                var newValueRed = Math.sqrt(Math.pow(newValueRedX, 2) + Math.pow(newValueRedY, 2));
-                var newValueGreen = Math.sqrt(Math.pow(newValueGreenX, 2) + Math.pow(newValueGreenY, 2));
-                var newValueBlue = Math.sqrt(Math.pow(newValueBlueX, 2) + Math.pow(newValueBlueY, 2));
-
-                var newValue = (newValueRed + newValueGreen + newValueBlue) / 3;
+                var newValue = Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2));
 
                 newValue *= gain;
 
@@ -290,20 +234,14 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     newValue = 0;
                 }
 
-                newRedMatrix[x][y] = (int) newValue;
-                newGreenMatrix[x][y] = (int) newValue;
-                newBlueMatrix[x][y] = (int) newValue;
+                newMatrix[x][y] = (int) newValue;
             }
         }
         return null;
     }
 
-    private Void computeLaplas(int[][] redMatrix,
-                               int[][] greenMatrix,
-                               int[][] blueMatrix,
-                               int[][] newRedMatrix,
-                               int[][] newGreenMatrix,
-                               int[][] newBlueMatrix,
+    private Void computeLaplas(int[][] oldMatrix,
+                               int[][] newMatrix,
                                double threshold,
                                double gain,
                                int[][] laplasCoefficients,
@@ -319,22 +257,16 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
 
         for (int x = width0; x < width1; x++) {
             for (var y = 0; y < height; y++) {
-                var newValueRed = 0;
-                var newValueGreen = 0;
-                var newValueBlue = 0;
+                var newValue = 0;
 
                 for (int i = 0; i < laplasWidth; i++) {
                     for (int j = 0; j < laplasHeight; j++) {
                         var newX = Math.min(Math.max(x + i - laplasWidthOffset, 0), width - 1);
                         var newY = Math.min(Math.max(y + j - laplasHeightOffset, 0), height - 1);
 
-                        newValueRed += (redMatrix[newX][newY] * laplasCoefficients[i][j]);
-                        newValueGreen += (greenMatrix[newX][newY] * laplasCoefficients[i][j]);
-                        newValueBlue += (blueMatrix[newX][newY] * laplasCoefficients[i][j]);
+                        newValue += (oldMatrix[newX][newY] * laplasCoefficients[i][j]);
                     }
                 }
-
-                var newValue = (newValueRed + newValueGreen + newValueBlue) / 3;
 
                 newValue *= gain;
 
@@ -342,9 +274,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     newValue = 0;
                 }
 
-                newRedMatrix[x][y] = newValue;
-                newGreenMatrix[x][y] = newValue;
-                newBlueMatrix[x][y] = newValue;
+                newMatrix[x][y] = newValue;
             }
         }
         return null;
@@ -393,30 +323,18 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             var width = bufferedImage.getWidth();
             var height = bufferedImage.getHeight();
 
-            var redMatrix = new int[width][height];
-            var greenMatrix = new int[width][height];
-            var blueMatrix = new int[width][height];
-            var newRedMatrix = new int[width][height];
-            var newGreenMatrix = new int[width][height];
-            var newBlueMatrix = new int[width][height];
+            var oldMatrix = new int[width][height];
+            var newMatrix = new int[width][height];
 
             for (var x = 0; x < width; x++) {
-                var redHeight = new int[height];
-                var greenHeight = new int[height];
-                var blueHeight = new int[height];
+                var oldHeight = new int[height];
                 for (var y = 0; y < height; y++) {
                     var color = new Color(bufferedImage.getRGB(x, y));
 
-                    redHeight[y] = color.getRed();
-                    greenHeight[y] = color.getGreen();
-                    blueHeight[y] = color.getBlue();
+                    oldHeight[y] = (int) (0.2125 * color.getRed() + 0.7154 * color.getGreen() + 0.0721 * color.getBlue());
                 }
-                redMatrix[x] = redHeight;
-                greenMatrix[x] = greenHeight;
-                blueMatrix[x] = blueHeight;
-                newRedMatrix[x] = new int[height];
-                newGreenMatrix[x] = new int[height];
-                newBlueMatrix[x] = new int[height];
+                oldMatrix[x] = oldHeight;
+                newMatrix[x] = new int[height];
             }
 
             var avgTime1 = 0.;
@@ -424,12 +342,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             for (var i = 0; i < 10; i++) {
                 avgTime1 += startParallel(
                     1,
-                    redMatrix,
-                    greenMatrix,
-                    blueMatrix,
-                    newRedMatrix,
-                    newGreenMatrix,
-                    newBlueMatrix,
+                    oldMatrix,
+                    newMatrix,
                     type,
                     threshold,
                     gain,
@@ -448,12 +362,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             for (var i = 0; i < 10; i++) {
                 avgTime2 += startParallel(
                     2,
-                    redMatrix,
-                    greenMatrix,
-                    blueMatrix,
-                    newRedMatrix,
-                    newGreenMatrix,
-                    newBlueMatrix,
+                    oldMatrix,
+                    newMatrix,
                     type,
                     threshold,
                     gain,
@@ -472,12 +382,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             for (var i = 0; i < 10; i++) {
                 avgTime3 += startParallel(
                     3,
-                    redMatrix,
-                    greenMatrix,
-                    blueMatrix,
-                    newRedMatrix,
-                    newGreenMatrix,
-                    newBlueMatrix,
+                    oldMatrix,
+                    newMatrix,
                     type,
                     threshold,
                     gain,
@@ -496,12 +402,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             for (var i = 0; i < 10; i++) {
                 avgTime4 += startParallel(
                     4,
-                    redMatrix,
-                    greenMatrix,
-                    blueMatrix,
-                    newRedMatrix,
-                    newGreenMatrix,
-                    newBlueMatrix,
+                    oldMatrix,
+                    newMatrix,
                     type,
                     threshold,
                     gain,
@@ -523,12 +425,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
     }
 
     private double startParallel(Integer threads,
-                                 int[][] redMatrix,
-                                 int[][] greenMatrix,
-                                 int[][] blueMatrix,
-                                 int[][] newRedMatrix,
-                                 int[][] newGreenMatrix,
-                                 int[][] newBlueMatrix,
+                                 int[][] oldMatrix,
+                                 int[][] newMatrix,
                                  ContourType type,
                                  double threshold,
                                  double gain,
@@ -551,12 +449,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     tasks.add(
                         executor.submit(
                             () -> computeRoberts(
-                                redMatrix,
-                                greenMatrix,
-                                blueMatrix,
-                                newRedMatrix,
-                                newGreenMatrix,
-                                newBlueMatrix,
+                                oldMatrix,
+                                newMatrix,
                                 threshold,
                                 gain,
                                 height,
@@ -571,12 +465,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     tasks.add(
                         executor.submit(
                             () -> computeSobel(
-                                redMatrix,
-                                greenMatrix,
-                                blueMatrix,
-                                newRedMatrix,
-                                newGreenMatrix,
-                                newBlueMatrix,
+                                oldMatrix,
+                                newMatrix,
                                 threshold,
                                 gain,
                                 sobelCoefficientsX,
@@ -593,12 +483,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     tasks.add(
                         executor.submit(
                             () -> computeLaplas(
-                                redMatrix,
-                                greenMatrix,
-                                blueMatrix,
-                                newRedMatrix,
-                                newGreenMatrix,
-                                newBlueMatrix,
+                                oldMatrix,
+                                newMatrix,
                                 threshold,
                                 gain,
                                 laplasCoefficients,
