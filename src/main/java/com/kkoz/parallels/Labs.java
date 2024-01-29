@@ -52,7 +52,8 @@ public enum Labs {
                 return List.of(
                     Pair.of("Текстурные карты Лавса", start + "lavs"),
                     Pair.of("Гистограммные статистики", start + "histogram"),
-                    Pair.of("Особые точки", start + "points"),
+                    Pair.of("Особые точки Harris", start + "harris"),
+                    Pair.of("Особые точки FAST", start + "fast"),
                     Pair.of("Метод Хаффа", start + "haff")
                 );
             }
