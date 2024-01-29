@@ -101,7 +101,7 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
                         }
                     }
 
-                    newMatrix[x][y] = (int) Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2));
+                    newMatrix[x][y] = (int) (3 * Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2)));
                 }
             }
 

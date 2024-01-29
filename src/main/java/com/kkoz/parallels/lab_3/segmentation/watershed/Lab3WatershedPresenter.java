@@ -34,6 +34,9 @@ public class Lab3WatershedPresenter extends Presenter<Lab3WatershedView> {
             var visitedMinMatrix = new int[width][height];
             var visitedMaxMatrix = new int[width][height];
             var newMatrix = new int[width][height];
+            var newMatrixR = new int[width][height];
+            var newMatrixG = new int[width][height];
+            var newMatrixB = new int[width][height];
 
             for (var x = 0; x < width; x++) {
                 var oldHeight = new int[height];
@@ -49,6 +52,9 @@ public class Lab3WatershedPresenter extends Presenter<Lab3WatershedView> {
                 }
                 oldMatrix[x] = oldHeight;
                 newMatrix[x] = new int[height];
+                newMatrixR[x] = new int[height];
+                newMatrixG[x] = new int[height];
+                newMatrixB[x] = new int[height];
                 pouredMatrix[x] = new int[height];
                 visitedMinMatrix[x] = new int[height];
                 visitedMaxMatrix[x] = new int[height];
@@ -66,7 +72,7 @@ public class Lab3WatershedPresenter extends Presenter<Lab3WatershedView> {
                     if (pouredMatrix[localMinX][localMinY] != 0 || Objects.equals(localMin.getA(), localMax)) {
                         continue;
                     }
-                    pour(oldMatrix, localMinX, localMinY, width, height, newMatrix, pouredMatrix, pouredIndex, localMax);
+                    pour(oldMatrix, localMinX, localMinY, width, height, newMatrix, newMatrixR, newMatrixG, newMatrixB, pouredMatrix, pouredIndex, localMax, 0, 0, 0);
                     segmentsCount[0]++;
                     pouredIndex[0]++;
                 }
@@ -75,9 +81,9 @@ public class Lab3WatershedPresenter extends Presenter<Lab3WatershedView> {
             for (var x = 0; x < width; x++) {
                 for (var y = 0; y < height; y++) {
                     var color = new Color(
-                        RGB.checkBorderValues(newMatrix[x][y]),
-                        RGB.checkBorderValues(newMatrix[x][y]),
-                        RGB.checkBorderValues(newMatrix[x][y])
+                        RGB.checkBorderValues(newMatrixR[x][y]),
+                        RGB.checkBorderValues(newMatrixG[x][y]),
+                        RGB.checkBorderValues(newMatrixB[x][y])
                     );
 
                     bufferedImage.setRGB(x, y, color.getRGB());
@@ -178,12 +184,20 @@ public class Lab3WatershedPresenter extends Presenter<Lab3WatershedView> {
         return Math.min(localMaxX0, Math.min(localMaxX1, Math.min(localMaxY0, Math.min(localMaxY1, localMax))));
     }
 
-    private void pour(int[][] oldMatrix, int x, int y, int width, int height, int[][] newMatrix, int[][] pouredMatrix, int[] pouredIndex, int localMax) {
+    private void pour(int[][] oldMatrix, int x, int y, int width, int height, int[][] newMatrix, int[][] newMatrixR, int[][] newMatrixG, int[][] newMatrixB, int[][] pouredMatrix, int[] pouredIndex, int localMax, double r, double g, double b) {
         if (pouredMatrix[x][y] != 0 || oldMatrix[x][y] >= localMax) {
             return;
         }
+        if (r == 0) {
+            r = Math.random() * 255;
+            g = Math.random() * 255;
+            b = Math.random() * 255;
+        }
         pouredMatrix[x][y] = pouredIndex[0];
         newMatrix[x][y] = 255;
+        newMatrixR[x][y] = (int) r;
+        newMatrixG[x][y] = (int) g;
+        newMatrixB[x][y] = (int) b;
 
         var x0 = x - 1;
         var x1 = x + 1;
@@ -191,16 +205,16 @@ public class Lab3WatershedPresenter extends Presenter<Lab3WatershedView> {
         var y1 = y + 1;
 
         if (x0 >= 0 && checkWaters(x0, y, width, height, pouredMatrix, pouredIndex)) {
-            pour(oldMatrix, x0, y, width, height, newMatrix, pouredMatrix, pouredIndex, localMax);
+            pour(oldMatrix, x0, y, width, height, newMatrix, newMatrixR, newMatrixG, newMatrixB, pouredMatrix, pouredIndex, localMax, r, g, b);
         }
         if (x1 < width && checkWaters(x1, y, width, height, pouredMatrix, pouredIndex)) {
-            pour(oldMatrix, x1, y, width, height, newMatrix, pouredMatrix, pouredIndex, localMax);
+            pour(oldMatrix, x1, y, width, height, newMatrix, newMatrixR, newMatrixG, newMatrixB, pouredMatrix, pouredIndex, localMax, r, g, b);
         }
         if (y0 >= 0 && checkWaters(x, y0, width, height, pouredMatrix, pouredIndex)) {
-            pour(oldMatrix, x, y0, width, height, newMatrix, pouredMatrix, pouredIndex, localMax);
+            pour(oldMatrix, x, y0, width, height, newMatrix, newMatrixR, newMatrixG, newMatrixB, pouredMatrix, pouredIndex, localMax, r, g, b);
         }
         if (y1 < height && checkWaters(x, y1, width, height, pouredMatrix, pouredIndex)) {
-            pour(oldMatrix, x, y1, width, height, newMatrix, pouredMatrix, pouredIndex, localMax);
+            pour(oldMatrix, x, y1, width, height, newMatrix, newMatrixR, newMatrixG, newMatrixB, pouredMatrix, pouredIndex, localMax, r, g, b);
         }
     }
 

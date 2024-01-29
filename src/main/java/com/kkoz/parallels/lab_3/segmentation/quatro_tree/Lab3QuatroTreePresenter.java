@@ -29,6 +29,9 @@ public class Lab3QuatroTreePresenter extends Presenter<Lab3QuatroTreeView> {
             var oldMatrix = new int[width][height];
             var newMatrix = new int[width][height];
             var newMatrixBorders = new int[2 * width - 1][2 * height - 1];
+            var newMatrixBordersR = new int[2 * width - 1][2 * height - 1];
+            var newMatrixBordersG = new int[2 * width - 1][2 * height - 1];
+            var newMatrixBordersB = new int[2 * width - 1][2 * height - 1];
 
             for (var x = 0; x < width; x++) {
                 var oldHeight = new int[height];
@@ -45,18 +48,21 @@ public class Lab3QuatroTreePresenter extends Presenter<Lab3QuatroTreeView> {
 
             for (var x = 0; x < 2 * width - 1; x++) {
                 newMatrixBorders[x] = new int[2 * height - 1];
+                newMatrixBordersR[x] = new int[2 * height - 1];
+                newMatrixBordersG[x] = new int[2 * height - 1];
+                newMatrixBordersB[x] = new int[2 * height - 1];
             }
 
             bufferedImage = new BufferedImage(2 * width - 1, 2 * height - 1, BufferedImage.TYPE_INT_RGB);
 
-            calculateSegment(oldMatrix, newMatrixBorders, segmentsCount, 0, width, 0, height);
+            calculateSegment(oldMatrix, newMatrixBorders, newMatrixBordersR, newMatrixBordersG, newMatrixBordersB, segmentsCount, 0, width, 0, height);
 
             for (var x = 0; x < 2 * width - 1; x++) {
                 for (var y = 0; y < 2 * height - 1; y++) {
                     var color = new Color(
-                        RGB.checkBorderValues(newMatrixBorders[x][y]),
-                        RGB.checkBorderValues(newMatrixBorders[x][y]),
-                        RGB.checkBorderValues(newMatrixBorders[x][y])
+                        RGB.checkBorderValues(newMatrixBordersR[x][y]),
+                        RGB.checkBorderValues(newMatrixBordersG[x][y]),
+                        RGB.checkBorderValues(newMatrixBordersB[x][y])
                     );
 
                     bufferedImage.setRGB(x, y, color.getRGB());
@@ -73,6 +79,9 @@ public class Lab3QuatroTreePresenter extends Presenter<Lab3QuatroTreeView> {
 
     private void calculateSegment(int[][] oldMatrix,
                                   int[][] newMatrixBorders,
+                                  int[][] newMatrixBordersR,
+                                  int[][] newMatrixBordersG,
+                                  int[][] newMatrixBordersB,
                                   int[] segmentsCount,
                                   int width0,
                                   int width1,
@@ -99,23 +108,34 @@ public class Lab3QuatroTreePresenter extends Presenter<Lab3QuatroTreeView> {
 
                     for (var i = 2 * width0 + 1; i < 2 * width1 - 1; i++) {
                         newMatrixBorders[i][2 * heightCenter] = 0;
+                        newMatrixBordersR[i][2 * heightCenter] = 0;
+                        newMatrixBordersG[i][2 * heightCenter] = 0;
+                        newMatrixBordersB[i][2 * heightCenter] = 0;
                     }
 
                     for (var i = 2 * height0 + 1; i < 2 * height1 - 1; i++) {
                         newMatrixBorders[2 * widthCenter][i] = 0;
+                        newMatrixBordersR[2 * widthCenter][i] = 0;
+                        newMatrixBordersG[2 * widthCenter][i] = 0;
+                        newMatrixBordersB[2 * widthCenter][i] = 0;
                     }
 
-                    calculateSegment(oldMatrix, newMatrixBorders, segmentsCount, width0, widthCenter, height0, heightCenter);
-                    calculateSegment(oldMatrix, newMatrixBorders, segmentsCount, widthCenter, width1, height0, heightCenter);
-                    calculateSegment(oldMatrix, newMatrixBorders, segmentsCount, width0, widthCenter, heightCenter, height1);
-                    calculateSegment(oldMatrix, newMatrixBorders, segmentsCount, widthCenter, width1, heightCenter, height1);
+                    calculateSegment(oldMatrix, newMatrixBorders, newMatrixBordersR, newMatrixBordersG, newMatrixBordersB, segmentsCount, width0, widthCenter, height0, heightCenter);
+                    calculateSegment(oldMatrix, newMatrixBorders, newMatrixBordersR, newMatrixBordersG, newMatrixBordersB, segmentsCount, widthCenter, width1, height0, heightCenter);
+                    calculateSegment(oldMatrix, newMatrixBorders, newMatrixBordersR, newMatrixBordersG, newMatrixBordersB, segmentsCount, width0, widthCenter, heightCenter, height1);
+                    calculateSegment(oldMatrix, newMatrixBorders, newMatrixBordersR, newMatrixBordersG, newMatrixBordersB, segmentsCount, widthCenter, width1, heightCenter, height1);
                     return;
                 }
             }
         }
+        var r = (Math.random() * 255);
+        var g = (Math.random() * 255);
+        var b = (Math.random() * 255);
         for (var x = 2 * width0; x < 2 * width1 - 1; x++) {
             for (var y = 2 * height0; y < 2 * height1 - 1; y++) {
-                newMatrixBorders[x][y] = (max + min) / 2;
+                newMatrixBordersR[x][y] = (int) r;
+                newMatrixBordersG[x][y] = (int) g;
+                newMatrixBordersB[x][y] = (int) b;
             }
         }
     }
