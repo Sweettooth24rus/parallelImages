@@ -9,18 +9,18 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public enum Labs {
-    LAB_1("http://localhost:8080/labs/1"),
-    LAB_2("http://localhost:8080/labs/2"),
-    LAB_3("http://localhost:8080/labs/3");
+    LAB_1("http://localhost:8080/labs/1/"),
+    LAB_2("http://localhost:8080/labs/2/"),
+    LAB_3("http://localhost:8080/labs/3/"),
+    LAB_4("http://localhost:8080/labs/4/");
 
     private final String url;
 
     public List<Pair<String, String>> getLabs() {
-        var start = "http://localhost:8080/labs/";
+        var start = this.url;
 
         switch (this) {
             case LAB_1 -> {
-                start += "1/";
                 return List.of(
                     Pair.of("Каналы", start + "channels"),
                     Pair.of("Яркость/контрастность", start + "filters"),
@@ -29,7 +29,6 @@ public enum Labs {
                 );
             }
             case LAB_2 -> {
-                start += "2/";
                 return List.of(
                     Pair.of("Импульсный шум", start + "noises/impulse"),
                     Pair.of("Аддитивный шум", start + "noises/additive"),
@@ -42,12 +41,19 @@ public enum Labs {
                 );
             }
             case LAB_3 -> {
-                start += "3/";
                 return List.of(
                     Pair.of("Контурное представление", start + "contour"),
                     Pair.of("Бинаризация", start + "binarisation"),
                     Pair.of("Сегментация (квадродерево)", start + "quatro_tree"),
                     Pair.of("Сегментация (водораздел)", start + "watershed")
+                );
+            }
+            case LAB_4 -> {
+                return List.of(
+                    Pair.of("Текстурные карты Лавса", start + "lavs"),
+                    Pair.of("Гистограммные статистики", start + "histogram"),
+                    Pair.of("Особые точки", start + "points"),
+                    Pair.of("Метод Хаффа", start + "haff")
                 );
             }
             default -> {
