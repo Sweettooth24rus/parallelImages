@@ -29,6 +29,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                         String gainValue,
                         List<List<String>> sobelCoefficientsXValues,
                         List<List<String>> sobelCoefficientsYValues,
+                        String sobelCoefValue,
                         List<List<String>> laplasCoefficientsValues,
                         String threadsCountValue) {
         try {
@@ -38,6 +39,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
 
             var sobelCoefficientsX = new int[3][3];
             var sobelCoefficientsY = new int[3][3];
+            var sobelCoef = Float.parseFloat(sobelCoefValue);
 
             for (var i = 0; i < 3; i++) {
                 sobelCoefficientsX[i] = new int[3];
@@ -114,6 +116,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                                     gain,
                                     sobelCoefficientsX,
                                     sobelCoefficientsY,
+                                    sobelCoef,
                                     height,
                                     width,
                                     start,
@@ -207,6 +210,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                               double gain,
                               int[][] sobelCoefficientsX,
                               int[][] sobelCoefficientsY,
+                              float sobelCoef,
                               int height,
                               int width,
                               int width0,
@@ -215,6 +219,8 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
             for (var y = 0; y < height; y++) {
                 var newValueX = 0;
                 var newValueY = 0;
+
+                var invCoef = 1 - sobelCoef;
 
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -226,7 +232,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     }
                 }
 
-                var newValue = Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2));
+                var newValue = Math.sqrt(sobelCoef * Math.pow(newValueX, 2) + invCoef * Math.pow(newValueY, 2));
 
                 newValue *= gain;
 
@@ -471,6 +477,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                                 gain,
                                 sobelCoefficientsX,
                                 sobelCoefficientsY,
+                                0.5F,
                                 height,
                                 width,
                                 start,

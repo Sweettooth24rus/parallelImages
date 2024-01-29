@@ -8,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
@@ -16,6 +17,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.StreamResource;
 
 import java.io.InputStream;
+import java.util.List;
 
 @Route("/labs/4/lavs")
 @RouteAlias("/labs/4")
@@ -24,6 +26,7 @@ public class Lab4LavsView extends View<Lab4LavsPresenter> {
     private final HorizontalLayout imageSection = new HorizontalLayout();
     private final TextField threadsCountField = new TextField();
     private final HorizontalLayout resultSection = new HorizontalLayout();
+    private final VerticalLayout mapsSection = new VerticalLayout();
 
     private String photoFileName;
 
@@ -36,7 +39,8 @@ public class Lab4LavsView extends View<Lab4LavsPresenter> {
         add(
             createUploadPhotoSection(),
             imageSection,
-            createResultSection(null, null, null, null, null)
+            createResultSection(null, null, null, null, null),
+            mapsSection
         );
     }
 
@@ -112,5 +116,16 @@ public class Lab4LavsView extends View<Lab4LavsPresenter> {
         imageSection.removeAll();
         addPhotoToSection(imageSection, buffer.getInputStream(photoFileName), "До фильтра");
         addPhotoToSection(imageSection, imageStream, "После фильтра");
+    }
+
+    public void refreshMapsSection(List<InputStream> list) {
+        mapsSection.removeAll();
+        for (var elem : list) {
+            var image = new Image(
+                new StreamResource("name", () -> elem),
+                "name"
+            );
+            mapsSection.add(image);
+        }
     }
 }

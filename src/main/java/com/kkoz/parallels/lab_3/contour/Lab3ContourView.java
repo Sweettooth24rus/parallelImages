@@ -36,6 +36,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
     private final HorizontalLayout sobelCoefficientsSection = new HorizontalLayout();
     private final List<List<TextField>> sobelCoefficientsX = new ArrayList<>();
     private final List<List<TextField>> sobelCoefficientsY = new ArrayList<>();
+    private final TextField sobelDecartCoef = new TextField();
     private final HorizontalLayout laplasCoefficientsSection = new HorizontalLayout();
     private final VerticalLayout laplasMatrixSection = new VerticalLayout();
     private final TextField laplasWidthTextField = new TextField();
@@ -75,6 +76,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                 gainTextField.getValue(),
                 sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                 sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                sobelDecartCoef.getValue(),
                 laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                 threadsCountField.getValue()
             );
@@ -96,6 +98,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelDecartCoef.getValue(),
                     laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 );
@@ -124,6 +127,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelDecartCoef.getValue(),
                     laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )
@@ -191,7 +195,11 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
             matrixSectionY.add(matrixRow);
         }
 
+        sobelDecartCoef.setLabel("Коэффициент декартовой корреляции");
+        sobelDecartCoef.setValue("0.5");
+
         sobelCoefficientsSection.add(
+            sobelDecartCoef,
             matrixSectionX,
             matrixSectionY,
             new Button(
@@ -203,6 +211,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelDecartCoef.getValue(),
                     laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )
@@ -270,6 +279,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelDecartCoef.getValue(),
                     laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )
@@ -378,6 +388,7 @@ public class Lab3ContourView extends View<Lab3ContourPresenter> {
                     gainTextField.getValue(),
                     sobelCoefficientsX.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     sobelCoefficientsY.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
+                    sobelDecartCoef.getValue(),
                     laplasCoefficients.stream().map(row -> row.stream().map(TextField::getValue).toList()).toList(),
                     threadsCountField.getValue()
                 )

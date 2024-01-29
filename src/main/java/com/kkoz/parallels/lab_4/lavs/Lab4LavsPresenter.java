@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,14 +35,11 @@ public class Lab4LavsPresenter extends Presenter<Lab4LavsView> {
                 {1, -4, 6, -4, 1}
             };
 
-            var lavsMatrix = new int[20][5][5];
+            var lavsMatrix = new int[25][5][5];
 
             var index = 0;
             for (var i = 0; i < 5; i++) {
                 for (var j = 0; j < 5; j++) {
-                    if (i == j) {
-                        continue;
-                    }
                     var lavsValue = new int[5][5];
                     for (var x = 0; x < 5; x++) {
                         var lavsRow = new int[5];
@@ -61,8 +59,7 @@ public class Lab4LavsPresenter extends Presenter<Lab4LavsView> {
 
             var oldMatrix = new int[width][height];
             var newMatrix = new int[width][height];
-            var newMatrixses = new int[20][width][height];
-            var mapsMatrixses = new int[10][width][height];
+            var newMatrixses = new int[25][width][height];
 
             for (var x = 0; x < width; x++) {
                 var oldHeight = new int[height];
@@ -77,15 +74,12 @@ public class Lab4LavsPresenter extends Presenter<Lab4LavsView> {
                 newMatrix[x] = new int[height];
             }
 
-            for (var k = 0; k < 20; k++) {
+            for (var k = 0; k < 25; k++) {
                 var matrixNew = new int[width][height];
                 for (var x = 0; x < width; x++) {
                     matrixNew[x] = new int[height];
                 }
                 newMatrixses[k] = matrixNew;
-                if (k % 2 == 0) {
-                    mapsMatrixses[k / 2] = new int[width][height];
-                }
             }
 
             var startTime = System.currentTimeMillis();
@@ -130,50 +124,35 @@ public class Lab4LavsPresenter extends Presenter<Lab4LavsView> {
 
             executor.shutdown();
 
-            var Ks = new int[]{0, 1, 2, 3, 5, 6, 7, 10, 11, 15};
-            var K1s = new int[]{4, 7, 10, 13, 4, 7, 10, 4, 7, 4};
-
-            for (var x = 0; x < width; x++) {
-                newMatrix[x] = new int[height];
-            }
-
-            executor = Executors.newFixedThreadPool(threads);
-
-            tasks = new ArrayList<>();
-
-            for (var i = 0; i < threads; i++) {
-                var start = (width / threads) * i;
-                var end = (width / threads) * (i + 1);
-                tasks.add(
-                    executor.submit(
-                        () -> c(newMatrix, newMatrixses, mapsMatrixses, Ks, K1s, start, end, height)
-                    )
-                );
-            }
-
-            for (var task : tasks) {
-                task.get();
-            }
-
-            executor.shutdown();
-
             var time = (System.currentTimeMillis() - startTime) / 1000.0;
 
-            for (var x = 0; x < width; x++) {
-                for (var y = 0; y < height; y++) {
-                    var color = new Color(
-                        RGB.checkBorderValues(newMatrix[x][y]),
-                        RGB.checkBorderValues(newMatrix[x][y]),
-                        RGB.checkBorderValues(newMatrix[x][y])
-                    );
+            var bufferedImageMatrix = new BufferedImage[25];
 
-                    bufferedImage.setRGB(x, y, color.getRGB());
+            for (var k = 0; k < 25; k++) {
+                bufferedImageMatrix[k] = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                for (var x = 0; x < width; x++) {
+                    for (var y = 0; y < height; y++) {
+                        var color = new Color(
+                            RGB.checkBorderValues(newMatrixses[k][x][y]),
+                            RGB.checkBorderValues(newMatrixses[k][x][y]),
+                            RGB.checkBorderValues(newMatrixses[k][x][y])
+                        );
+
+                        bufferedImageMatrix[k].setRGB(x, y, color.getRGB());
+                    }
                 }
             }
 
             view.refreshFilterPhotosSection(getInputStreamFromBufferedImage(bufferedImage));
 
             view.createResultSection(time, null, null, null, null);
+
+            List<InputStream> list = new ArrayList<>();
+            for (BufferedImage image : bufferedImageMatrix) {
+                InputStream inputStreamFromBufferedImage = getInputStreamFromBufferedImage(image);
+                list.add(inputStreamFromBufferedImage);
+            }
+            view.refreshMapsSection(list);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -211,7 +190,7 @@ public class Lab4LavsPresenter extends Presenter<Lab4LavsView> {
         for (int x = width0; x < width1; x++) {
             for (var y = 0; y < height; y++) {
 
-                for (var k = 0; k < 20; k++) {
+                for (var k = 0; k < 25; k++) {
                     var newValue = 0;
                     for (int i = 0; i < 5; i++) {
                         for (int j = 0; j < 5; j++) {
