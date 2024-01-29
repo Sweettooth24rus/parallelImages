@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
 
@@ -106,62 +105,40 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
                 }
             }
 
-//            Map<Point, Integer> accumulator = houghTransform(newMatrix, width, height);
-//            List<Point> lines = getTopNMax(accumulator, 10);
-//            drawDetectedLines(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, lines, width, height);
-
-            Map<Point, Integer> circles = houghCircle(newMatrix, Math.min(width, height) / 10, Math.min(width, height) / 2, width, height);
-            List<Point> result = getTopCircles(circles, 10);
-            drawCircles(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, result, width, height);
-
             var startTime = System.currentTimeMillis();
 
-//            var executor = Executors.newFixedThreadPool(threads);
-//
-//            var tasks = new ArrayList<Future<Void>>();
-//
-//            for (var i = 0; i < threads; i++) {
-//                var start = (width / threads) * i + 3;
-//                var end = (width / threads) * (i + 1) - 3;
-//                tasks.add(
-//                    executor.submit(
-//                        () -> {
-//                            var thetaMax = 180;
-//
-//                            for (var x = start; x < end; x++) {
-//                                for (var y = 0; y < height; y++) {
-//                                    if (newMatrix[x][y] != 255) {
-//                                        continue;
-//                                    }
-//                                    for (var theta = 0; theta < thetaMax; theta++) {
-//                                        var rho = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
-//                                        dicts.put(new Pair<>(rho, theta), dicts.getOrDefault(new Pair<>(rho, theta), 0) + 1);
-//                                    }
-//                                }
-//                            }
-//                            return null;
-//                        }
-//                    )
-//                );
-//            }
-//
-//            for (var task : tasks) {
-//                task.get();
-//            }
-//
-//            executor.shutdown();
+            var executor = Executors.newFixedThreadPool(threads);
+
+            var tasks = new ArrayList<Future<Void>>();
+
+            for (var i = 0; i < threads; i++) {
+                var start = (width / threads) * i;
+                var end = (width / threads) * (i + 1);
+                tasks.add(
+                    executor.submit(
+                        () -> {
+                            if (type == HaffType.LINEAR) {
+                                Map<Point, Integer> accumulator = houghTransform(newMatrix, start, end, width, height);
+                                List<Point> lines = getTopNMax(accumulator, 10);
+                                drawDetectedLines(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, lines, width, height);
+                            } else {
+                                Map<Point, Integer> circles = houghCircle(newMatrix, Math.min(width, height) / 10, Math.min(width, height) / 2, start, end, width, height);
+                                List<Point> result = getTopCircles(circles, 10);
+                                drawCircles(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, result, width, height);
+                            }
+                            return null;
+                        }
+                    )
+                );
+            }
+
+            for (var task : tasks) {
+                task.get();
+            }
+
+            executor.shutdown();
 
             var time = (System.currentTimeMillis() - startTime) / 1000.0;
-
-//            for (var point : cornersList) {
-//                for (var x = Math.max(0, point.getA() - 3); x < Math.min(width, point.getA() + 3); x++) {
-//                    for (var y = Math.max(0, point.getB() - 3); y < Math.min(height, point.getB() + 3); y++) {
-//                        newMatrixRed[x][y] = 255 - oldMatrixRed[x][y];
-//                        newMatrixGreen[x][y] = 255 - oldMatrixGreen[x][y];
-//                        newMatrixBlue[x][y] = 255 - oldMatrixBlue[x][y];
-//                    }
-//                }
-//            }
 
             for (var x = 0; x < width; x++) {
                 for (var y = 0; y < height; y++) {
@@ -183,32 +160,26 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
         }
     }
 
-    public static Map<Point, Integer> houghCircleRow(int[][] imageMatrix, int y, int width, int height, int minRadius, int maxRadius) {
+    public static Map<Point, Integer> houghCircle(int[][] imageMatrix, int minRadius, int maxRadius, int start, int end, int width, int height) {
         Map<Point, Integer> circles = new HashMap<>();
-        for (int x = 0; x < width; x++) {
-            if (imageMatrix[x][y] != 255) {
-                continue;
-            }
-            for (int r = minRadius; r <= maxRadius; r++) {
-                for (int angle = 0; angle < 360; angle++) {
-                    int a = (int) (x - r * Math.cos(Math.toRadians(angle)));
-                    int b = (int) (y - r * Math.sin(Math.toRadians(angle)));
-                    if (0 <= a && a < width && 0 <= b && b < height) {
-                        Point key = new Point(a, b, r);
-                        circles.put(key, circles.getOrDefault(key, 0) + 1);
+        for (int x = start; x < end; x++) {
+            for (int y = 0; y < height; y++) {
+                if (imageMatrix[x][y] != 255) {
+                    continue;
+                }
+                for (int r = minRadius; r <= maxRadius; r++) {
+                    for (int angle = 0; angle < 360; angle++) {
+                        int a = (int) (x - r * Math.cos(Math.toRadians(angle)));
+                        int b = (int) (y - r * Math.sin(Math.toRadians(angle)));
+                        if (0 <= a && a < width && 0 <= b && b < height) {
+                            Point key = new Point(a, b, r);
+                            circles.put(key, circles.getOrDefault(key, 1) + 1);
+                        }
                     }
                 }
             }
         }
         return circles;
-    }
-
-    public static Map<Point, Integer> houghCircle(int[][] imageMatrix, int minRadius, int maxRadius, int width, int height) {
-        Map<Point, Integer> result = new HashMap<>();
-        for (var y = 0; y < height; y++) {
-            result.putAll(houghCircleRow(imageMatrix, y, width, height, minRadius, maxRadius));
-        }
-        return result;
     }
 
     public static void drawCircles(int[][] oldMatrixRed, int[][] oldMatrixGreen, int[][] oldMatrixBlue, List<Point> circles, int width, int height) {
@@ -233,7 +204,7 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
         return circles.entrySet().stream()
             .filter(entry -> entry.getValue() >= topValue)
             .map(Map.Entry::getKey)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public static List<Point> getTopNMax(Map<Point, Integer> matrix, int n) {
@@ -247,14 +218,24 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
         return matrix.entrySet().stream()
             .filter(entry -> entry.getValue() >= topValue)
             .map(Map.Entry::getKey)
-            .collect(Collectors.toList());
+            .toList();
     }
 
-    public static Map<Point, Integer> houghTransform(int[][] contour, int width, int height) {
-        int thetaMax = 180;
-        List<Map<Point, Integer>> dicts = new ArrayList<>();
-
-        return houghTransformRow(contour, height, width, thetaMax);
+    public static Map<Point, Integer> houghTransform(int[][] contour, int start, int end, int width, int height) {
+        Map<Point, Integer> accumulator = new HashMap<>();
+        for (int x = start; x < end; x++) {
+            for (int y = 0; y < height; y++) {
+                if (contour[x][y] != 255) {
+                    continue;
+                }
+                for (int theta = 0; theta < 180; theta++) {
+                    int rho = (int) (x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta)));
+                    var key = new Point(rho, theta, 0);
+                    accumulator.put(key, accumulator.getOrDefault(key, 1) + 1);
+                }
+            }
+        }
+        return accumulator;
     }
 
     public static void drawDetectedLines(int[][] oldMatrixRed, int[][] oldMatrixGreen, int[][] oldMatrixBlue, List<Point> detectedLines, int width, int height) {
@@ -283,23 +264,6 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
                 }
             }
         }
-    }
-
-    public static Map<Point, Integer> houghTransformRow(int[][] pixels, int height, int width, int thetaMax) {
-        Map<Point, Integer> accumulator = new HashMap<>();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if (pixels[x][y] != 255) {
-                    continue;
-                }
-                for (int theta = 0; theta < thetaMax; theta++) {
-                    int rho = (int) (x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta)));
-                    var key = new Point(rho, theta, 0);
-                    accumulator.put(key, accumulator.getOrDefault(key, 0) + 1);
-                }
-            }
-        }
-        return accumulator;
     }
 
     private InputStream getInputStreamFromBufferedImage(BufferedImage bufferedImage) throws IOException {
