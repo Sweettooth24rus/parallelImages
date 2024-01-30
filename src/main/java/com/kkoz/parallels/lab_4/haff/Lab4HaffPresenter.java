@@ -3,7 +3,6 @@ package com.kkoz.parallels.lab_4.haff;
 import com.kkoz.parallels.HaffType;
 import com.kkoz.parallels.Presenter;
 import com.kkoz.parallels.RGB;
-import oshi.util.tuples.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -101,7 +100,12 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
                         }
                     }
 
-                    newMatrix[x][y] = (int) (3 * Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2)));
+                    var value = (int) (Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2)));
+
+                    newMatrix[x][y] = value;
+                    newMatrixRed[x][y] = value;
+                    newMatrixGreen[x][y] = value;
+                    newMatrixBlue[x][y] = value;
                 }
             }
 
@@ -120,11 +124,13 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
                             if (type == HaffType.LINEAR) {
                                 Map<Point, Integer> accumulator = houghTransform(newMatrix, start, end, width, height);
                                 List<Point> lines = getTopNMax(accumulator, 10);
-                                drawDetectedLines(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, lines, width, height);
+//                                drawDetectedLines(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, lines, width, height);
+                                drawDetectedLines(newMatrixRed, newMatrixGreen, newMatrixBlue, lines, width, height);
                             } else {
-                                Map<Point, Integer> circles = houghCircle(newMatrix, Math.min(width, height) / 10, Math.min(width, height) / 2, start, end, width, height);
+                                Map<Point, Integer> circles = houghCircle(newMatrix, Math.min(width, height) / 10, Math.min(width, height) / 4, start, end, width, height);
                                 List<Point> result = getTopCircles(circles, 10);
                                 drawCircles(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, result, width, height);
+//                                drawCircles(newMatrixRed, newMatrixGreen, newMatrixBlue, result, width, height);
                             }
                             return null;
                         }
@@ -200,8 +206,8 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
     }
 
     public static List<Point> getTopCircles(Map<Point, Integer> circles, int count) {
-        int topValue = circles.values().stream().sorted((a, b) -> b - a).limit(count).min(Integer::compare).orElse(0);
-        return circles.entrySet().stream()
+        int topValue = circles.values().parallelStream().sorted((a, b) -> b - a).limit(count).min(Integer::compare).orElse(0);
+        return circles.entrySet().parallelStream()
             .filter(entry -> entry.getValue() >= topValue)
             .map(Map.Entry::getKey)
             .toList();
@@ -274,6 +280,17 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
 
     public void calculateAverage(InputStream imageStream) {
         try {
+            var sobelCoefficientsX = new int[][]{
+                {1, 0, -1},
+                {2, 0, -2},
+                {1, 0, -1}
+            };
+            var sobelCoefficientsY = new int[][]{
+                {2, 1, 0},
+                {1, 0, -1},
+                {0, -1, -2}
+            };
+
             var bufferedImage = ImageIO.read(imageStream);
 
             var width = bufferedImage.getWidth();
@@ -283,6 +300,7 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
             var oldMatrixRed = new int[width][height];
             var oldMatrixGreen = new int[width][height];
             var oldMatrixBlue = new int[width][height];
+            var newMatrix = new int[width][height];
             var newMatrixRed = new int[width][height];
             var newMatrixGreen = new int[width][height];
             var newMatrixBlue = new int[width][height];
@@ -312,66 +330,99 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
                 oldMatrixRed[x] = oldHeightRed;
                 oldMatrixGreen[x] = oldHeightGreen;
                 oldMatrixBlue[x] = oldHeightBlue;
+                newMatrix[x] = new int[height];
                 newMatrixRed[x] = newHeightRed;
                 newMatrixGreen[x] = newHeightGreen;
                 newMatrixBlue[x] = newHeightBlue;
             }
 
+            for (int x = 0; x < width; x++) {
+                for (var y = 0; y < height; y++) {
+                    var newValueX = 0;
+                    var newValueY = 0;
+
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            var newX = Math.min(Math.max(x + i - 1, 0), width - 1);
+                            var newY = Math.min(Math.max(y + j - 1, 0), height - 1);
+
+                            newValueX += (oldMatrix[newX][newY] * sobelCoefficientsX[i][j]);
+                            newValueY += (oldMatrix[newX][newY] * sobelCoefficientsY[i][j]);
+                        }
+                    }
+
+                    var value = (int) (Math.sqrt(Math.pow(newValueX, 2) + Math.pow(newValueY, 2)));
+
+                    newMatrix[x][y] = value;
+                    newMatrixRed[x][y] = value;
+                    newMatrixGreen[x][y] = value;
+                    newMatrixBlue[x][y] = value;
+                }
+            }
+
             var avgTime1 = 0.;
 
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < 5; i++) {
                 avgTime1 += startParallel(
                     1,
-                    oldMatrix,
-                    new ArrayList<>(),
+                    newMatrix,
+                    oldMatrixRed,
+                    oldMatrixGreen,
+                    oldMatrixBlue,
                     height,
                     width
                 );
             }
 
-            avgTime1 /= 10;
+            avgTime1 /= 5;
 
             var avgTime2 = 0.;
 
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < 5; i++) {
                 avgTime2 += startParallel(
                     2,
-                    oldMatrix,
-                    new ArrayList<>(),
+                    newMatrix,
+                    oldMatrixRed,
+                    oldMatrixGreen,
+                    oldMatrixBlue,
                     height,
                     width
                 );
             }
 
-            avgTime2 /= 10;
+            avgTime2 /= 5;
 
             var avgTime3 = 0.;
 
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < 5; i++) {
                 avgTime3 += startParallel(
                     3,
-                    oldMatrix,
-                    new ArrayList<>(),
+                    newMatrix,
+                    oldMatrixRed,
+                    oldMatrixGreen,
+                    oldMatrixBlue,
                     height,
                     width
                 );
             }
 
-            avgTime3 /= 10;
+            avgTime3 /= 5;
 
             var avgTime4 = 0.;
 
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < 5; i++) {
                 avgTime4 += startParallel(
                     4,
-                    oldMatrix,
-                    new ArrayList<>(),
+                    newMatrix,
+                    oldMatrixRed,
+                    oldMatrixGreen,
+                    oldMatrixBlue,
                     height,
                     width
                 );
             }
 
-            avgTime4 /= 10;
+            avgTime4 /= 5;
 
             view.createResultSection(null, avgTime1, avgTime2, avgTime3, avgTime4);
 
@@ -381,8 +432,10 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
     }
 
     private double startParallel(Integer threads,
-                                 int[][] oldMatrix,
-                                 List<Pair<Integer, Integer>> cornersList,
+                                 int[][] newMatrix,
+                                 int[][] oldMatrixRed,
+                                 int[][] oldMatrixGreen,
+                                 int[][] oldMatrixBlue,
                                  int height,
                                  int width) throws ExecutionException, InterruptedException {
         var startTime = System.currentTimeMillis();
@@ -392,38 +445,24 @@ public class Lab4HaffPresenter extends Presenter<Lab4HaffView> {
         var tasks = new ArrayList<Future<Void>>();
 
         for (var i = 0; i < threads; i++) {
-            var start = (width / threads) * i + 3;
-            var end = (width / threads) * (i + 1) - 3;
+            var start = (width / threads) * i;
+            var end = (width / threads) * (i + 1);
             tasks.add(
                 executor.submit(
                     () -> {
                         for (var x = start; x < end; x++) {
-                            for (var y = 3; y < height - 3; y++) {
-                                var threshold_min = oldMatrix[x][y] - 30;
-                                var threshold_max = oldMatrix[x][y] + 30;
-
-                                var circle_pixels = new int[][]{
-                                    {x, y - 3}, {x + 1, y - 3}, {x + 2, y - 2}, {x + 3, y - 1},
-                                    {x + 3, y}, {x + 3, y + 1}, {x + 2, y + 2}, {x + 1, y + 3},
-                                    {x, y + 3}, {x - 1, y + 3}, {x - 2, y + 2}, {x - 3, y + 1},
-                                    {x - 3, y}, {x - 3, y - 1}, {x - 2, y - 2}, {x - 1, y - 3}
-                                };
-
-                                var consecutive_brighter = 0;
-                                var consecutive_darker = 0;
-
-                                for (var j = 0; j < circle_pixels.length; j++) {
-                                    var value = oldMatrix[circle_pixels[j][0]][circle_pixels[j][1]];
-                                    if (value > threshold_max) {
-                                        consecutive_brighter++;
-                                    } else if (value < threshold_min) {
-                                        consecutive_darker++;
-                                    }
-                                }
-
-                                if (consecutive_brighter >= 9 || consecutive_darker >= 9) {
-                                    cornersList.add(new Pair<>(x, y));
-                                }
+                            for (var y = 0; y < height; y++) {
+//                                if (type == HaffType.LINEAR) {
+                                Map<Point, Integer> accumulator = houghTransform(newMatrix, start, end, width, height);
+//                                List<Point> lines = getTopNMax(accumulator, 10);
+//                                drawDetectedLines(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, lines, width, height);
+//                                drawDetectedLines(newMatrixRed, newMatrixGreen, newMatrixBlue, lines, width, height);
+//                                } else {
+//                                Map<Point, Integer> circles = houghCircle(newMatrix, Math.min(width, height) / 10, Math.min(width, height) / 4, start, end, width, height);
+//                                List<Point> result = getTopCircles(circles, 10);
+//                                drawCircles(oldMatrixRed, oldMatrixGreen, oldMatrixBlue, result, width, height);
+//                                drawCircles(newMatrixRed, newMatrixGreen, newMatrixBlue, result, width, height);
+//                                }
                             }
                         }
                         return null;

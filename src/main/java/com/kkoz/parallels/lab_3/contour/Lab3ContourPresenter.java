@@ -215,12 +215,12 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                               int width,
                               int width0,
                               int width1) {
+        var invCoef = 1 - sobelCoef;
+
         for (int x = width0; x < width1; x++) {
             for (var y = 0; y < height; y++) {
                 var newValueX = 0;
                 var newValueY = 0;
-
-                var invCoef = 1 - sobelCoef;
 
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -232,7 +232,7 @@ public class Lab3ContourPresenter extends Presenter<Lab3ContourView> {
                     }
                 }
 
-                var newValue = Math.sqrt(sobelCoef * Math.pow(newValueX, 2) + invCoef * Math.pow(newValueY, 2));
+                var newValue = sobelCoef * newValueX + invCoef * newValueY;
 
                 newValue *= gain;
 

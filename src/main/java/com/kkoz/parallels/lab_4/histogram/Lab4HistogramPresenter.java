@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,6 +34,10 @@ public class Lab4HistogramPresenter extends Presenter<Lab4HistogramView> {
 
             var oldMatrix = new int[width][height];
             var newMatrix = new int[width][height];
+            var contrastMatrix = new int[width][height];
+            var uniformityMatrix = new int[width][height];
+            var entropyMatrix = new int[width][height];
+            var energyMatrix = new int[width][height];
 
             for (var x = 0; x < width; x++) {
                 var oldHeight = new int[height];
@@ -46,6 +50,10 @@ public class Lab4HistogramPresenter extends Presenter<Lab4HistogramView> {
                 }
                 oldMatrix[x] = oldHeight;
                 newMatrix[x] = new int[height];
+                contrastMatrix[x] = new int[height];
+                uniformityMatrix[x] = new int[height];
+                entropyMatrix[x] = new int[height];
+                energyMatrix[x] = new int[height];
             }
 
             var startTime = System.currentTimeMillis();
@@ -59,7 +67,7 @@ public class Lab4HistogramPresenter extends Presenter<Lab4HistogramView> {
                 var end = (width / threads) * (i + 1);
                 tasks.add(
                     executor.submit(
-                        () -> a(oldMatrix, newMatrix, start, end, width, height)
+                        () -> a(oldMatrix, contrastMatrix, uniformityMatrix, entropyMatrix, energyMatrix, start, end, width, height)
                     )
                 );
             }
@@ -72,35 +80,75 @@ public class Lab4HistogramPresenter extends Presenter<Lab4HistogramView> {
 
             var time = (System.currentTimeMillis() - startTime) / 1000.0;
 
+            var contrastBufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var uniformityBufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var entropyBufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            var energyBufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             for (var x = 0; x < width; x++) {
                 for (var y = 0; y < height; y++) {
                     var color = new Color(
-                        RGB.checkBorderValues(newMatrix[x][y]),
-                        RGB.checkBorderValues(newMatrix[x][y]),
-                        RGB.checkBorderValues(newMatrix[x][y])
+                        RGB.checkBorderValues(contrastMatrix[x][y]),
+                        RGB.checkBorderValues(contrastMatrix[x][y]),
+                        RGB.checkBorderValues(contrastMatrix[x][y])
                     );
 
-                    bufferedImage.setRGB(x, y, color.getRGB());
+                    contrastBufferedImage.setRGB(x, y, color.getRGB());
+
+                    color = new Color(
+                        RGB.checkBorderValues(uniformityMatrix[x][y]),
+                        RGB.checkBorderValues(uniformityMatrix[x][y]),
+                        RGB.checkBorderValues(uniformityMatrix[x][y])
+                    );
+
+                    uniformityBufferedImage.setRGB(x, y, color.getRGB());
+
+                    color = new Color(
+                        RGB.checkBorderValues(entropyMatrix[x][y]),
+                        RGB.checkBorderValues(entropyMatrix[x][y]),
+                        RGB.checkBorderValues(entropyMatrix[x][y])
+                    );
+
+                    entropyBufferedImage.setRGB(x, y, color.getRGB());
+
+                    color = new Color(
+                        RGB.checkBorderValues(energyMatrix[x][y]),
+                        RGB.checkBorderValues(energyMatrix[x][y]),
+                        RGB.checkBorderValues(energyMatrix[x][y])
+                    );
+
+                    energyBufferedImage.setRGB(x, y, color.getRGB());
                 }
             }
 
             view.refreshFilterPhotosSection(getInputStreamFromBufferedImage(bufferedImage));
 
             view.createResultSection(time, null, null, null, null);
+
+            view.refreshMapsSection(
+                List.of(
+                    getInputStreamFromBufferedImage(contrastBufferedImage),
+                    getInputStreamFromBufferedImage(uniformityBufferedImage),
+                    getInputStreamFromBufferedImage(entropyBufferedImage),
+                    getInputStreamFromBufferedImage(energyBufferedImage)
+                )
+            );
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     private Void a(int[][] oldMatrix,
-                   int[][] newMatrix,
+                   int[][] contrastMatrix,
+                   int[][] uniformityMatrix,
+                   int[][] entropyMatrix,
+                   int[][] energyMatrix,
                    int width0,
                    int width1,
                    int width,
                    int height) {
-        var random = new Random();
         for (var x = width0; x < width1; x++) {
             for (var y = 0; y < height; y++) {
+                var histogram = new double[256];
                 var sum = 0D;
                 var count = 0;
                 var xmin = Math.max(0, x - 2);
@@ -109,17 +157,31 @@ public class Lab4HistogramPresenter extends Presenter<Lab4HistogramView> {
                 var ymax = Math.min(y + 2, height - 1);
                 for (var x0 = xmin; x0 <= xmax; x0++) {
                     for (var y0 = ymin; y0 <= ymax; y0++) {
-                        sum += oldMatrix[x0][y0];
+                        var value = oldMatrix[x0][y0];
+                        sum += value;
+                        histogram[value]++;
                         count++;
                     }
                 }
                 var average = (int) (sum / count);
-                for (var x0 = xmin; x0 <= xmax; x0++) {
-                    for (var y0 = ymin; y0 <= ymax; y0++) {
-                        var a = oldMatrix[x0][y0] - average;
-                        newMatrix[x][y] += a * a * random.nextDouble();
-                    }
+
+                var contrastValue = 0D;
+                var uniformityValue = 0D;
+                var entropyValue = 0D;
+                var energyValue = 0D;
+
+                for (var i = 0; i < 256; i++) {
+                    var prob = histogram[i] / count;
+
+                    contrastValue += Math.pow(i - average, 2) * prob;
+                    uniformityValue += Math.pow(prob, 2);
+                    entropyValue -= prob == 0 ? 0 : (Math.log(prob) / Math.log(2)) * prob;
+                    energyValue += Math.pow(prob, 2);
                 }
+                contrastMatrix[x][y] = (int) contrastValue;
+                uniformityMatrix[x][y] = (int) (uniformityValue * 255);
+                entropyMatrix[x][y] = (int) (Math.abs(entropyValue) * 63);
+                energyMatrix[x][y] = (int) (Math.sqrt(energyValue) * 255);
             }
         }
         return null;
@@ -233,7 +295,7 @@ public class Lab4HistogramPresenter extends Presenter<Lab4HistogramView> {
             var end = (width / threads) * (i + 1);
             tasks.add(
                 executor.submit(
-                    () -> a(oldMatrix, newMatrix, start, end, width, height)
+                    () -> a(oldMatrix, newMatrix, newMatrix, newMatrix, newMatrix, start, end, width, height)
                 )
             );
         }
